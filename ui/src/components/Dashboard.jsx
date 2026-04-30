@@ -106,7 +106,7 @@ const Dashboard = ({
             {/* Sensor Cards Row 2 */}
             <div className="lg:col-start-3 lg:row-start-2">
               <SensorCard
-                title="Soil"
+                title="Soil Moisture"
                 value={plantData?.soil_moisture ?? '—'}
                 unit="%"
                 icon="🪴"
@@ -117,7 +117,7 @@ const Dashboard = ({
 
             <div className="lg:col-start-4 lg:row-start-2">
               <SensorCard
-                title="Water"
+                title="Water Level"
                 value={plantData?.water_level ?? '—'}
                 unit="%"
                 icon="🚰"

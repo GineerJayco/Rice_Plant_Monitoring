@@ -98,7 +98,7 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
 
       <div className="relative h-full flex flex-col p-2">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[7px] font-black uppercase tracking-[0.05em] text-gray-500">
+          <p className="text-[10px] font-black uppercase tracking-[0.05em] text-gray-500">
             {title}
           </p>
           <div className="text-xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
