@@ -28,9 +28,8 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-[55] w-64 transform bg-gray-950/40 backdrop-blur-xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col`}
+        className={`fixed inset-y-0 left-0 z-[55] w-64 transform bg-gray-950/40 backdrop-blur-xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } flex flex-col`}
       >
         <div className="p-4">
           {/* Logo Section */}
@@ -40,7 +39,7 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
             </div>
             <div>
               <h1 className="text-sm font-extrabold text-white leading-tight uppercase tracking-wider">
-                Smart<br />Irrigation
+                Intelligent<br />Irrigation
               </h1>
             </div>
           </div>
@@ -81,7 +80,7 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
             <div className="px-1">
               <p className="text-[9px] text-gray-600 uppercase font-black tracking-[0.2em] mb-2">Monitor</p>
               <div className="text-[10px] text-gray-500 space-y-1">
-                  <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Setup {activePlant}</span>
+                <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Setup {activePlant}</span>
                 {lastUpdated && (
                   <div className="flex justify-between items-center opacity-60">
                     <span>{lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
