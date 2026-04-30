@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
-import Loader from './components/Loader';
+import InitialLoader from './components/InitialLoader';
 import { getCurrentPlantData } from './services/api';
 
 /**
@@ -54,7 +54,7 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  if (initialLoading && !plantData) return <Loader />;
+  if (initialLoading && !plantData) return <InitialLoader />;
 
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100 selection:bg-emerald-500/30 overflow-hidden">

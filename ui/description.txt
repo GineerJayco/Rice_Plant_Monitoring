@@ -1,0 +1,41 @@
+We are trying to make a website nga maka monitor remotely sa kani nga mga parameters namo
+1. Humidity (DHT22 sensor)
+2. Temperature ( DHT22 sensor, usa rani sila sa humidity)
+3. Soil moisture (capacitive soil moisture sensor)
+4. Water level (ultrasonic sensor)
+5. Presence sa disease na among idetect if positive or negative (raspi cam plus machine learning)
+
+Naa na nuon miy code para sa hardware system namo, amo nalang lacking is ang website mismo and unsaon sila pag incorporate. 
+
+Naa miy 6 ka setup na need imonitor. Based sa among code (sa system hardware) kay motuyok ra ug 360degrees ang raspi camera for a specific time kay usa ra amo raspi cam for kato 6 kabook na setup para maka detect sa presence sa disease thru image processing. 
+In regards sa both temperature and humidity namo kay naa miy isa ka sensor and mao na toy gamiton sa tanan 6 setup namo. Nya sa soil moisture and sa water level kay naa mi 6 sd kabook kay 1 per setup. 
+
+Possible ba like sa website namo kani ang mo show?
+Pananglitan, setup 1. Mo show sha sa reading sa temperature, humidity, soil moisture, water level, and presence sa disease (if positive or negative) then ishow pd nia ang image na macapture sa among camera mismo. Then after pila ka seconds kay mo rotate among raspi cam, then ang setup 2 nasd na data ang ishow, and so on
+
+Nag use diay mi ug ESP32 pra sa mga sensors namo (tanan parameters except sa disease detection) then nag use pd ug raspi module para ang output sa ESP32 kay ifeed sa raspi plus ang raspi camera
+
+Quick bg sa among thesis. Ang among prototype kay goal nia is iadjust ang amount of water na ihatag sa plant based sa if naay disease or wala. If naay disease kay less water, if wala kay standard amount. 
+
+Actually, naa miy 4 main setup 
+1. Traditional irrigation, without disease
+2. Traditional irrigation, with disease
+3. Intelligent irrigation, without disease
+4. Intelligent irrigation, with disease. 
+
+Then each main setup naa mi 3 samples each. Maong naa mi 12 plants/setup. Pero sa kaning system namo focus lang mi sa SETUP 3 and 4. Katong intelligent irrigation. Then each main setup naa dba 3. So mao to naay 6 setup/plant na need ishow ang data sa website.
+
+Ang dagan sa among system is naa miy idetect namo ang following parameters:
+1. Humidity and Temp (DHT22 sensor, usa ra ka sensor para nila tanan, all for one)
+2. Soil moisture (Capacitive soil moisture sensor, one each plant ni, bale naay 6 ka sensors tanan)
+3. Water level (ultrasonic sensor, usa ra ka sensor para sa tanan, all for one)
+4. Presence sa disease (raspi cam, usa ra ka camera among use then mo rotate lang sha from setup 1 to 6)
+
+Then ang want unta namo na ma show sa website is
+Inig tutok sa pi cam sa plant 1 kay mo show ang 5 parameters (humid, temp, s-moist, water level, and if positive or negative ang presence sa disease)
+
+After pila ka secs kay mobalhin napd ang tutok sa cam, sa plant 2 na pd. Mo show na pd sha sa parameters
+
+Plain monitoring ra gyud ni sha, wala ramiy need na controls from website to hardware. 
+
+If possible kay prefer ta mi ug dynamic IP (sakto ba akong term) kay like 5 barangays away among greenhouse from school. Since dili namo madala amo prototype kay dako man kaayu nya dili pede sd ibton kay ang irrigation maong ganahan ta mi mobawi sa among website nga mamonitor japon bisag very layo and lahi ang wifi g connectan sa mobile device ug sa amo system

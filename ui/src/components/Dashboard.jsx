@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
-import BentoGrid from './BentoGrid';
-import SensorCard from './SensorCard';
-import ImageCard from './ImageCard';
-import StatusCard from './StatusCard';
-import PlantIndicator from './PlantIndicator';
+import SensorView from './SensorView';
+import CameraView from './CameraView';
+import StatusDetectionView from './StatusDetectionView';
+import SetupIndicator from './SetupIndicator';
 
 /**
  * Dashboard Component
  * - Displays data for the active plant
- * - Uses a bento grid layout with circular gauges for sensors
+ * - Uses a bento-style layout with specialized visual cards
  */
 const Dashboard = ({
   plantData,
@@ -53,7 +52,7 @@ const Dashboard = ({
           </div>
 
           <div className="flex items-center gap-4 animate-fadeIn">
-            <PlantIndicator activePlant={activePlant} />
+            <SetupIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
               <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-red-500'} animate-pulse`} />
               <div className="text-[8px]">
@@ -65,13 +64,13 @@ const Dashboard = ({
 
 
 
-        {/* Bento Grid Layout */}
+        {/* Bento Layout */}
         <div className="flex-1">
-          <BentoGrid className="gap-4">
+          <div className="grid grid-cols-1 gap-4 h-full lg:grid-cols-4 lg:grid-rows-[repeat(2,1fr)_auto]">
             {/* Camera Feed */}
             <div className="lg:col-span-2 lg:row-span-2" key={`image-${plantSwapKey}`}>
               <div className="animate-fadeIn h-full">
-                <ImageCard
+                <CameraView
                   imageUrl={imageUrl}
                   activePlant={activePlant}
                   plantName={plantName}
@@ -83,7 +82,7 @@ const Dashboard = ({
 
             {/* Sensor Cards Row 1 */}
             <div className="lg:col-start-3 lg:row-start-1">
-              <SensorCard
+              <SensorView
                 title="Temperature"
                 value={plantData?.temperature ?? '—'}
                 unit="°C"
@@ -95,7 +94,7 @@ const Dashboard = ({
             </div>
 
             <div className="lg:col-start-4 lg:row-start-1">
-              <SensorCard
+              <SensorView
                 title="Humidity"
                 value={plantData?.humidity ?? '—'}
                 unit="%"
@@ -108,7 +107,7 @@ const Dashboard = ({
 
             {/* Sensor Cards Row 2 */}
             <div className="lg:col-start-3 lg:row-start-2">
-              <SensorCard
+              <SensorView
                 title="Soil Moisture"
                 value={plantData?.soil_moisture ?? '—'}
                 unit="%"
@@ -120,7 +119,7 @@ const Dashboard = ({
             </div>
 
             <div className="lg:col-start-4 lg:row-start-2">
-              <SensorCard
+              <SensorView
                 title="Water Level"
                 value={plantData?.water_level ?? '—'}
                 unit="%"
@@ -134,7 +133,7 @@ const Dashboard = ({
             {/* Disease Status Card Row 3 */}
             <div className="lg:col-span-4 lg:row-start-3" key={`status-${plantSwapKey}`}>
               <div className="animate-fadeIn">
-                <StatusCard
+                <StatusDetectionView
                   disease={plantData?.disease ?? 'Unknown'}
                   diseaseType={plantData?.disease_type ?? null}
                   timestamp={plantData?.timestamp ?? ''}
@@ -142,7 +141,7 @@ const Dashboard = ({
                 />
               </div>
             </div>
-          </BentoGrid>
+          </div>
         </div>
       </div>
     </main>

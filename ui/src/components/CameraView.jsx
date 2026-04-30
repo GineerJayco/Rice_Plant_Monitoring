@@ -1,15 +1,21 @@
 import React from 'react';
 
 /**
- * ImageCard Component
- * Large bento card for the rotating camera feed.
+ * CameraView Component
+ * Merged camera view card from ImageCard and ImageDisplay.
  */
-const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = false, source = 'api' }) => {
-  const subtitle = plantName ? `Setup ${activePlant} • ${plantName}` : `Setup ${activePlant}`;
+const CameraView = ({
+  imageUrl,
+  activePlant = 1,
+  plantName = '',
+  isLoading = false,
+  source = 'api',
+  timestamp = '',
+}) => {
+  const subtitle = plantName ? `Setup ${activePlant} - ${plantName}` : `Setup ${activePlant}`;
 
   return (
-    <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gray-950/40 backdrop-blur-md shadow-2xl shadow-emerald-500/10">
-      {/* Header overlay */}
+    <div className="relative h-full min-h-[400px] overflow-hidden rounded-3xl border border-white/10 bg-gray-950/40 backdrop-blur-md shadow-2xl shadow-emerald-500/10">
       <div className="absolute inset-x-0 top-0 z-20 p-3 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -24,17 +30,17 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
         </div>
       </div>
 
-      {/* Image container */}
-      <div className="h-full w-full bg-black/40 relative">
+      <div className="h-full w-full bg-black/40 relative flex items-center justify-center group">
         {isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <div className="h-10 w-10 rounded-full border-2 border-emerald-500/20 border-t-emerald-400 animate-spin" />
+            <p className="text-gray-400 text-sm">Loading camera feed...</p>
           </div>
         ) : (
           <img
             src={imageUrl}
             alt={`Setup ${activePlant} camera feed`}
-            className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             onError={(e) => {
               e.currentTarget.src = `/images/plant${activePlant}.svg`;
             }}
@@ -42,10 +48,8 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
           />
         )}
 
-        {/* Gradient for readability */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        
-        {/* Footer Overlay */}
+
         <div className="absolute bottom-0 inset-x-0 z-20 p-3 flex items-center justify-between gap-3">
           <div className="text-[8px] text-gray-300 font-medium">
             Setup <span className="text-emerald-300">1-6</span> Rotates
@@ -56,8 +60,16 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
           </div>
         </div>
       </div>
+
+      {timestamp ? (
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-gray-900 to-transparent p-6 pt-12">
+          <p className="text-gray-400 text-xs">
+            Last captured: <span className="text-emerald-400 font-semibold">{timestamp}</span>
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 };
 
-export default ImageCard;
+export default CameraView;
