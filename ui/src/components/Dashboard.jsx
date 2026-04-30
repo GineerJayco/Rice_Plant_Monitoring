@@ -27,7 +27,7 @@ const Dashboard = ({
 
   return (
     <main className="flex-1 h-full flex flex-col overflow-hidden px-2 py-2 sm:px-4 lg:px-6">
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         {/* Header Section */}
         <div className="mb-3 flex flex-row items-center justify-between gap-4">
           <div className="animate-slideIn flex items-center gap-4">

@@ -48,7 +48,7 @@ function App() {
     fetchData().catch(() => setInitialLoading(false));
 
     const interval = setInterval(() => {
-      fetchData({ silent: true }).catch(() => {});
+      fetchData({ silent: true }).catch(() => { });
     }, POLL_MS);
 
     return () => clearInterval(interval);
@@ -59,14 +59,14 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100 selection:bg-emerald-500/30 overflow-hidden">
       <div className="mx-auto w-full max-w-[1920px] flex">
-        <Sidebar 
-          activePlant={plantData?.active_plant ?? 1} 
-          refreshing={refreshing} 
-          lastUpdated={lastUpdated} 
+        <Sidebar
+          activePlant={plantData?.active_plant ?? 1}
+          refreshing={refreshing}
+          lastUpdated={lastUpdated}
         />
 
         <div className="flex-1 flex flex-col min-w-0">
-          <Dashboard 
+          <Dashboard
             plantData={plantData}
             source={source}
             refreshing={refreshing}
