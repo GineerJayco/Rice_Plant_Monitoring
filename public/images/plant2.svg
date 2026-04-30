@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="52%" cy="33%" r="70%">
+      <stop offset="0" stop-color="#34d399" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#glow)"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.08">
+    <path d="M0 160H1200M0 320H1200M0 480H1200M0 640H1200"/>
+    <path d="M240 0V800M480 0V800M720 0V800M960 0V800"/>
+  </g>
+  <g transform="translate(600 420)">
+    <path d="M0 220c25-120 35-175 5-260" stroke="#34d399" stroke-width="10" stroke-linecap="round"/>
+    <path d="M30-20c130-20 200-90 210-190-120-20-220 40-250 150" fill="#10b981" fill-opacity="0.85"/>
+    <path d="M-20 0c-140-10-220-80-240-190 130-30 250 30 270 150" fill="#34d399" fill-opacity="0.75"/>
+    <circle cx="0" cy="250" r="90" fill="#0b1220" stroke="#34d399" stroke-opacity="0.35" stroke-width="6"/>
+    <path d="M-50 270c20-35 80-35 100 0" stroke="#34d399" stroke-opacity="0.65" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <text x="60" y="92" fill="#e5e7eb" font-family="Inter,Segoe UI,system-ui" font-weight="700" font-size="44">Camera Feed (Mock)</text>
+  <text x="60" y="150" fill="#34d399" font-family="Inter,Segoe UI,system-ui" font-weight="800" font-size="56">Plant 2</text>
+</svg>

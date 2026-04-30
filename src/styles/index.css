@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: radial-gradient(1200px 700px at 20% 10%, rgba(16, 185, 129, 0.10), transparent 55%),
+    radial-gradient(900px 600px at 90% 30%, rgba(59, 130, 246, 0.08), transparent 55%),
+    linear-gradient(135deg, #030712 0%, #0b1220 35%, #030712 100%);
+  color: #e5e7eb;
+  min-height: 100vh;
+  overflow-y: auto; /* allow scrolling if content exceeds viewport */
+}
+
+/* Utility Classes */
+.container-dashboard {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.card-base {
+  @apply bg-gray-900/50 rounded-3xl shadow-xl border border-white/10 backdrop-blur-md;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
+}
+
+.badge-success {
+  @apply px-4 py-2 bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 rounded-full font-semibold text-sm;
+}
+
+.badge-danger {
+  @apply px-4 py-2 bg-red-500/20 text-red-200 border border-red-500/30 rounded-full font-semibold text-sm;
+}
+
+.badge-warning {
+  @apply px-4 py-2 bg-amber-500/20 text-amber-200 border border-amber-500/30 rounded-full font-semibold text-sm;
+}
+
+.badge-info {
+  @apply px-4 py-2 bg-sky-500/20 text-sky-200 border border-sky-500/30 rounded-full font-semibold text-sm;
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(15, 118, 110, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0);
+  }
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.10);
+  border-top: 4px solid #10b981;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.55);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.8);
+}
