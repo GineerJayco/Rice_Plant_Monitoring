@@ -35,7 +35,8 @@ const Dashboard = ({
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
                   Dashboard
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[8px] font-bold text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[8px] font-bold text-red-400 border border-red-500/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                     Live
                   </span>
                 </h2>
@@ -54,7 +55,7 @@ const Dashboard = ({
           <div className="flex items-center gap-4 animate-fadeIn">
             <PlantIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
-              <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-emerald-400'} ${refreshing ? 'animate-pulse' : ''}`} />
+              <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-red-500'} animate-pulse`} />
               <div className="text-[8px]">
                 <span className="text-gray-200 font-extrabold">{refreshing ? 'Updating…' : 'Sync: Live'}</span>
               </div>
@@ -89,6 +90,7 @@ const Dashboard = ({
                 icon="🌡️"
                 tone="amber"
                 meterMax={50}
+                type="temperature"
               />
             </div>
 
@@ -100,6 +102,7 @@ const Dashboard = ({
                 icon="💧"
                 tone="sky"
                 meterMax={100}
+                type="humidity"
               />
             </div>
 
@@ -112,6 +115,7 @@ const Dashboard = ({
                 icon="🪴"
                 tone="emerald"
                 meterMax={100}
+                type="soil"
               />
             </div>
 
@@ -123,6 +127,7 @@ const Dashboard = ({
                 icon="🚰"
                 tone="violet"
                 meterMax={100}
+                type="water"
               />
             </div>
 

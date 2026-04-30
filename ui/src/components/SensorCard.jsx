@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CircularGauge from './CircularGauge';
+import SemiCircleGauge from './SemiCircleGauge';
+import SparklineChart from './SparklineChart';
+import VerticalTank from './VerticalTank';
+import SegmentedBar from './SegmentedBar';
 
 /**
  * Smoothly animates a numeric value whenever it changes.
@@ -46,7 +50,7 @@ const useAnimatedNumber = (value, durationMs = 550) => {
  * Reusable card for sensor values (temp, humidity, etc.) with glassmorphism styling.
  * Now features a circular gauge for better visual feedback.
  */
-const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', meterMax = 100 }) => {
+const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', meterMax = 100, type = 'circular' }) => {
   const isNumeric = useMemo(() => Number.isFinite(Number(value)), [value]);
   const animatedValue = useAnimatedNumber(isNumeric ? Number(value) : value);
 
@@ -107,13 +111,21 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center py-2">
-          <CircularGauge 
-            value={displayValue} 
-            max={meterMax} 
-            unit={unit} 
-            tone={tone} 
-            size={100}
-          />
+          {type === 'temperature' && (
+            <SemiCircleGauge value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+          )}
+          {type === 'humidity' && (
+            <SparklineChart value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+          )}
+          {type === 'water' && (
+            <VerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+          )}
+          {type === 'soil' && (
+            <SegmentedBar value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+          )}
+          {(!['temperature', 'humidity', 'water', 'soil'].includes(type)) && (
+            <CircularGauge value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+          )}
         </div>
 
         {/* Status Indicator */}
