@@ -2,7 +2,7 @@ import React from 'react';
 
 /**
  * PlantIndicator Component
- * Shows which plants are available and which one is currently active
+ * Shows which setups are available and which one is currently active
  * @param {number} activePlant - ID of the currently active plant (1-6)
  */
 const PlantIndicator = ({ activePlant = 1 }) => {
@@ -11,9 +11,9 @@ const PlantIndicator = ({ activePlant = 1 }) => {
   return (
     <div className="rounded-2xl border border-white/10 bg-gray-900/40 backdrop-blur-md px-4 py-3 shadow-lg shadow-emerald-500/5">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Plant</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Setup</p>
         <p className="text-xs text-gray-400">
-          Monitoring <span className="text-emerald-300 font-semibold">Plant {activePlant}</span>
+          Monitoring <span className="text-emerald-300 font-semibold">Setup {activePlant}</span>
         </p>
       </div>
 
@@ -28,7 +28,7 @@ const PlantIndicator = ({ activePlant = 1 }) => {
                   ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_18px_rgba(16,185,129,0.55)] scale-110'
                   : 'bg-white/10 border-white/10',
               ].join(' ')}
-              title={`Plant ${plantId}`}
+              title={`Setup ${plantId}`}
             />
           </div>
         ))}

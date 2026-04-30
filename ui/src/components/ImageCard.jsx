@@ -5,7 +5,7 @@ import React from 'react';
  * Large bento card for the rotating camera feed.
  */
 const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = false, source = 'api' }) => {
-  const subtitle = plantName ? `Plant ${activePlant} • ${plantName}` : `Plant ${activePlant}`;
+  const subtitle = plantName ? `Setup ${activePlant} • ${plantName}` : `Setup ${activePlant}`;
 
   return (
     <div className="relative h-full min-h-[400px] overflow-hidden rounded-3xl border border-white/10 bg-gray-950/40 backdrop-blur-md shadow-2xl shadow-emerald-500/10 flex flex-col">
@@ -34,7 +34,7 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
         ) : (
           <img
             src={imageUrl}
-            alt={`Plant ${activePlant} camera feed`}
+            alt={`Setup ${activePlant} camera feed`}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
             onError={(e) => {
               e.currentTarget.src = `/images/plant${activePlant}.svg`;
@@ -50,7 +50,7 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
       {/* Footer */}
       <div className="flex items-center justify-between gap-3 px-6 py-4">
         <div className="text-xs text-gray-400">
-          Camera rotates across <span className="text-emerald-300 font-semibold">6 plants</span>
+          Camera rotates across <span className="text-emerald-300 font-semibold">6 setups</span>
         </div>
         <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
           <span className="h-2 w-2 rounded-full bg-emerald-400/80" />

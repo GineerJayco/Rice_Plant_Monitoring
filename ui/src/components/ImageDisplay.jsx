@@ -9,7 +9,7 @@ import React from 'react';
  * @param {number} plantId - Active plant ID
  * @param {string} plantName - Name of the plant
  */
-const ImageDisplay = ({ imageUrl, isLoading = false, timestamp = '', plantId = 1, plantName = 'Plant' }) => {
+const ImageDisplay = ({ imageUrl, isLoading = false, timestamp = '', plantId = 1, plantName = 'Setup' }) => {
   return (
     <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/20 shadow-2xl shadow-emerald-500/10 h-full min-h-[400px] flex flex-col">
       {/* Header with plant info */}
@@ -17,7 +17,7 @@ const ImageDisplay = ({ imageUrl, isLoading = false, timestamp = '', plantId = 1
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-2xl font-bold text-white">Currently Monitoring</h3>
-            <p className="text-emerald-400 font-semibold">Plant {plantId} - {plantName}</p>
+            <p className="text-emerald-400 font-semibold">Setup {plantId} - {plantName}</p>
           </div>
           <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 px-3 py-2 rounded-lg">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>

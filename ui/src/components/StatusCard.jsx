@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import StatusBadge from './StatusBadge';
 
 /**
@@ -24,7 +24,7 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
               {isPositive ? 'Positive' : 'Negative'}
             </h2>
             <div className="text-sm font-semibold text-gray-300">
-              {isPositive ? 'Disease detected — action recommended.' : 'Healthy plant — no disease detected.'}
+              {isPositive ? 'Disease detected — action recommended.' : 'Healthy setup — no disease detected.'}
             </div>
           </div>
 
