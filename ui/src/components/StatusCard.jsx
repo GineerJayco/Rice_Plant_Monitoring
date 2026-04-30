@@ -18,12 +18,12 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
 
       <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Disease Detection</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Disease Detection</p>
           <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-            <h2 className={`text-5xl font-extrabold tracking-tight ${isPositive ? 'text-red-400' : 'text-emerald-400'}`}>
+            <h2 className={`text-4xl font-extrabold tracking-tight ${isPositive ? 'text-red-400' : 'text-emerald-400'}`}>
               {isPositive ? 'Positive' : 'Negative'}
             </h2>
-            <div className="text-sm font-semibold text-gray-300">
+            <div className="text-xs font-semibold text-gray-300">
               {isPositive ? 'Disease detected — action recommended.' : 'Healthy setup — no disease detected.'}
             </div>
           </div>
@@ -31,11 +31,11 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
           {isPositive && diseaseType ? (
             <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-2">
               <span className="text-red-300">⚠️</span>
-              <span className="text-sm font-semibold text-red-200">Detected: {diseaseType}</span>
+              <span className="text-xs font-semibold text-red-200">Detected: {diseaseType}</span>
             </div>
           ) : null}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] text-gray-400">
             {timestamp ? (
               <span>
                 Timestamp: <span className="text-gray-200 font-semibold">{timestamp}</span>
@@ -49,7 +49,7 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
         </div>
 
         <div className="shrink-0 flex items-center gap-3">
-          <div className={`text-5xl ${isPositive ? 'animate-pulse' : ''}`}>
+          <div className={`text-4xl ${isPositive ? 'animate-pulse' : ''}`}>
             {isPositive ? '🦠' : '🌿'}
           </div>
           <StatusBadge

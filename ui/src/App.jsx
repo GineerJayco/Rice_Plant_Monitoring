@@ -57,22 +57,24 @@ function App() {
   if (initialLoading && !plantData) return <Loader />;
 
   return (
-    <div className="flex min-h-screen bg-gray-950 text-gray-100 selection:bg-emerald-500/30">
-      <Sidebar 
-        activePlant={plantData?.active_plant ?? 1} 
-        refreshing={refreshing} 
-        lastUpdated={lastUpdated} 
-      />
-
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Dashboard 
-          plantData={plantData}
-          source={source}
-          refreshing={refreshing}
-          error={error}
-          lastUpdated={lastUpdated}
-          plantSwapKey={plantSwapKey}
+    <div className="flex min-h-screen bg-gray-950 text-gray-100 selection:bg-emerald-500/30 overflow-hidden">
+      <div className="mx-auto w-full max-w-[1920px] flex">
+        <Sidebar 
+          activePlant={plantData?.active_plant ?? 1} 
+          refreshing={refreshing} 
+          lastUpdated={lastUpdated} 
         />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <Dashboard 
+            plantData={plantData}
+            source={source}
+            refreshing={refreshing}
+            error={error}
+            lastUpdated={lastUpdated}
+            plantSwapKey={plantSwapKey}
+          />
+        </div>
       </div>
     </div>
   );

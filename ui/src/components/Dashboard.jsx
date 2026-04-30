@@ -10,13 +10,13 @@ import PlantIndicator from './PlantIndicator';
  * - Displays data for the active plant
  * - Uses a bento grid layout with circular gauges for sensors
  */
-const Dashboard = ({ 
-  plantData, 
-  source, 
-  refreshing, 
-  error, 
-  lastUpdated, 
-  plantSwapKey 
+const Dashboard = ({
+  plantData,
+  source,
+  refreshing,
+  error,
+  lastUpdated,
+  plantSwapKey
 }) => {
   const activePlant = plantData?.active_plant ?? 1;
   const plantName = plantData?.plant_name ?? '';
@@ -27,19 +27,18 @@ const Dashboard = ({
 
   return (
     <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-[1600px] flex flex-col">
+      <div className="flex flex-col">
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="animate-slideIn">
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-4">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-4">
               Dashboard
-              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
                 Live
               </span>
             </h2>
-            <p className="mt-3 text-gray-400 max-w-xl leading-relaxed">
-              Real-time monitoring of <span className="text-emerald-300 font-bold">Setup {activePlant}</span>. 
-              Our system analyzes sensor data and camera feeds to ensure optimal growth and disease prevention.
+            <p className="mt-3 text-gray-400 max-w-xl leading-relaxed text-sm">
+              Real-time monitoring of <span className="text-emerald-300 font-bold">Setup {activePlant}</span>.
             </p>
           </div>
 
@@ -47,7 +46,7 @@ const Dashboard = ({
             <PlantIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-3 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-md px-5 py-3">
               <div className={`h-2.5 w-2.5 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-emerald-400'} ${refreshing ? 'animate-pulse' : ''}`} />
-              <div className="text-xs">
+              <div className="text-[10px]">
                 <span className="text-gray-500 font-bold uppercase tracking-widest mr-2">Sync:</span>
                 <span className="text-gray-200 font-extrabold">{refreshing ? 'Updating…' : 'Connected'}</span>
               </div>
@@ -61,8 +60,8 @@ const Dashboard = ({
             <div className="flex items-center gap-4">
               <span className="text-2xl">⚠️</span>
               <div>
-                <p className="text-sm font-bold text-amber-200 tracking-wide uppercase">Connection Warning</p>
-                <p className="mt-1 text-sm text-amber-100/70">{error}</p>
+                <p className="text-xs font-bold text-amber-200 tracking-wide uppercase">Connection Warning</p>
+                <p className="mt-1 text-xs text-amber-100/70">{error}</p>
               </div>
             </div>
           </div>

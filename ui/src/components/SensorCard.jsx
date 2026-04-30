@@ -98,10 +98,10 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
 
       <div className="relative h-full flex flex-col p-8">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
             {title}
           </p>
-          <div className="text-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+          <div className="text-xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
             {icon}
           </div>
         </div>
@@ -119,7 +119,7 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
         {/* Status Indicator */}
         <div className="mt-4 flex items-center justify-center gap-2">
           <div className={['w-1.5 h-1.5 rounded-full animate-pulse', tone === 'emerald' ? 'bg-emerald-400' : tone === 'sky' ? 'bg-sky-400' : tone === 'amber' ? 'bg-amber-400' : 'bg-violet-400'].join(' ')} />
-          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
+          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
         </div>
       </div>
     </div>

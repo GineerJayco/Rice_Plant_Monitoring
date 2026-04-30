@@ -16,12 +16,12 @@ const ImageDisplay = ({ imageUrl, isLoading = false, timestamp = '', plantId = 1
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-gray-900 to-transparent p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-white">Currently Monitoring</h3>
+            <h3 className="text-xl font-bold text-white">Currently Monitoring</h3>
             <p className="text-emerald-400 font-semibold">Setup {plantId} - {plantName}</p>
           </div>
           <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 px-3 py-2 rounded-lg">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-emerald-300 text-sm font-medium">LIVE</span>
+            <span className="text-emerald-300 text-xs font-medium">LIVE</span>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@ const ImageDisplay = ({ imageUrl, isLoading = false, timestamp = '', plantId = 1
       {/* Timestamp Footer */}
       {timestamp && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-6 pt-12">
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-400 text-xs">
             Last captured: <span className="text-emerald-400 font-semibold">{timestamp}</span>
           </p>
         </div>

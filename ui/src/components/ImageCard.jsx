@@ -13,13 +13,13 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
       <div className="absolute inset-x-0 top-0 z-20 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Currently Monitoring</p>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">{subtitle}</h2>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Currently Monitoring</p>
+            <h2 className="mt-2 text-xl font-extrabold text-white">{subtitle}</h2>
           </div>
 
           <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold text-emerald-300">{source === 'mock' ? 'DEMO' : 'LIVE'}</span>
+            <span className="text-[10px] font-semibold text-emerald-300">{source === 'mock' ? 'DEMO' : 'LIVE'}</span>
           </div>
         </div>
       </div>
@@ -29,7 +29,7 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
         {isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
             <div className="h-14 w-14 rounded-full border-4 border-emerald-500/20 border-t-emerald-400 border-r-emerald-400 animate-spin" />
-            <p className="text-sm font-medium text-gray-400">Loading camera feed…</p>
+            <p className="text-xs font-medium text-gray-400">Loading camera feed…</p>
           </div>
         ) : (
           <img
@@ -49,10 +49,10 @@ const ImageCard = ({ imageUrl, activePlant = 1, plantName = '', isLoading = fals
 
       {/* Footer */}
       <div className="flex items-center justify-between gap-3 px-6 py-4">
-        <div className="text-xs text-gray-400">
+        <div className="text-[10px] text-gray-400">
           Camera rotates across <span className="text-emerald-300 font-semibold">6 setups</span>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
+        <div className="hidden sm:flex items-center gap-2 text-[10px] text-gray-400">
           <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
           <span>Auto-updates</span>
         </div>

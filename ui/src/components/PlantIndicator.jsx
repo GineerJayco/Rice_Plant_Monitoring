@@ -11,8 +11,8 @@ const PlantIndicator = ({ activePlant = 1 }) => {
   return (
     <div className="rounded-2xl border border-white/10 bg-gray-900/40 backdrop-blur-md px-4 py-3 shadow-lg shadow-emerald-500/5">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Setup</p>
-        <p className="text-xs text-gray-400">
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Active Setup</p>
+        <p className="text-[10px] text-gray-400">
           Monitoring <span className="text-emerald-300 font-semibold">Setup {activePlant}</span>
         </p>
       </div>
