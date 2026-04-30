@@ -94,10 +94,10 @@ const CircularGauge = ({
       {/* Central Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <div className="flex items-baseline gap-0.5">
-          <span className="text-xl font-black text-white">
+          <span className="text-lg font-black text-white">
             {isNumeric ? Math.round(numValue) : '—'}
           </span>
-          <span className="text-[10px] font-bold text-gray-500 uppercase">{unit}</span>
+          <span className="text-[8px] font-bold text-gray-500 uppercase">{unit}</span>
         </div>
       </div>
     </div>

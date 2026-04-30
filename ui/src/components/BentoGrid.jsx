@@ -8,9 +8,9 @@ const BentoGrid = ({ children, className = '' }) => {
   return (
     <div
       className={[
-        'grid grid-cols-1 gap-4',
+        'grid grid-cols-1 gap-2 h-full',
         // Fixed row sizing on large screens so the dashboard fits the viewport.
-        'lg:grid-cols-4 lg:grid-rows-[repeat(3,minmax(180px,1fr))_auto]',
+        'lg:grid-cols-4 lg:grid-rows-[repeat(2,1fr)_auto]',
         className,
       ].join(' ')}
     >

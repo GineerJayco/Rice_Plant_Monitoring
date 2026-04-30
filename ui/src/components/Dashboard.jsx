@@ -26,52 +26,49 @@ const Dashboard = ({
   }, [plantData, activePlant]);
 
   return (
-    <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-8 lg:px-12">
+    <main className="flex-1 h-full flex flex-col overflow-hidden px-2 py-2 sm:px-4 lg:px-6">
       <div className="flex flex-col">
         {/* Header Section */}
-        <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="animate-slideIn">
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-4">
-              Dashboard
-              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
-                Live
-              </span>
-            </h2>
-            <p className="mt-3 text-gray-400 max-w-xl leading-relaxed text-sm">
-              Real-time monitoring of <span className="text-emerald-300 font-bold">Setup {activePlant}</span>.
-            </p>
+        <div className="mb-3 flex flex-row items-center justify-between gap-4">
+          <div className="animate-slideIn flex items-center gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                  Dashboard
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[8px] font-bold text-emerald-400 border border-emerald-500/20">
+                    Live
+                  </span>
+                </h2>
+                {error && (
+                  <span className="animate-pulse flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold text-amber-400 border border-amber-500/20" title={error}>
+                    ⚠️ Connection Warning
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-400 leading-relaxed text-[10px]">
+                Monitoring <span className="text-emerald-300 font-bold text-[10px]">Setup {activePlant}</span>.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4 animate-fadeIn">
             <PlantIndicator activePlant={activePlant} />
-            <div className="hidden sm:flex items-center gap-3 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-md px-5 py-3">
-              <div className={`h-2.5 w-2.5 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-emerald-400'} ${refreshing ? 'animate-pulse' : ''}`} />
-              <div className="text-[10px]">
-                <span className="text-gray-500 font-bold uppercase tracking-widest mr-2">Sync:</span>
-                <span className="text-gray-200 font-extrabold">{refreshing ? 'Updating…' : 'Connected'}</span>
+            <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
+              <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-emerald-400'} ${refreshing ? 'animate-pulse' : ''}`} />
+              <div className="text-[8px]">
+                <span className="text-gray-200 font-extrabold">{refreshing ? 'Updating…' : 'Sync: Live'}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Error Notification */}
-        {error ? (
-          <div className="mb-8 rounded-[2rem] border border-amber-500/20 bg-amber-500/5 px-8 py-5 backdrop-blur-md animate-slideIn">
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">⚠️</span>
-              <div>
-                <p className="text-xs font-bold text-amber-200 tracking-wide uppercase">Connection Warning</p>
-                <p className="mt-1 text-xs text-amber-100/70">{error}</p>
-              </div>
-            </div>
-          </div>
-        ) : null}
+
 
         {/* Bento Grid Layout */}
         <div className="flex-1">
-          <BentoGrid className="gap-6 sm:gap-8">
+          <BentoGrid className="gap-4">
             {/* Camera Feed */}
-            <div className="lg:col-span-2 lg:row-span-3" key={`image-${plantSwapKey}`}>
+            <div className="lg:col-span-2 lg:row-span-2" key={`image-${plantSwapKey}`}>
               <div className="animate-fadeIn h-full">
                 <ImageCard
                   imageUrl={imageUrl}
@@ -83,7 +80,7 @@ const Dashboard = ({
               </div>
             </div>
 
-            {/* Sensor Cards */}
+            {/* Sensor Cards Row 1 */}
             <div className="lg:col-start-3 lg:row-start-1">
               <SensorCard
                 title="Temperature"
@@ -106,9 +103,10 @@ const Dashboard = ({
               />
             </div>
 
-            <div className="lg:col-start-3 lg:col-span-2 lg:row-start-2">
+            {/* Sensor Cards Row 2 */}
+            <div className="lg:col-start-3 lg:row-start-2">
               <SensorCard
-                title="Soil Moisture"
+                title="Soil"
                 value={plantData?.soil_moisture ?? '—'}
                 unit="%"
                 icon="🪴"
@@ -117,9 +115,9 @@ const Dashboard = ({
               />
             </div>
 
-            <div className="lg:col-start-3 lg:col-span-2 lg:row-start-3">
+            <div className="lg:col-start-4 lg:row-start-2">
               <SensorCard
-                title="Water Level"
+                title="Water"
                 value={plantData?.water_level ?? '—'}
                 unit="%"
                 icon="🚰"
@@ -128,8 +126,8 @@ const Dashboard = ({
               />
             </div>
 
-            {/* Disease Status Card */}
-            <div className="lg:col-span-4 lg:row-start-4" key={`status-${plantSwapKey}`}>
+            {/* Disease Status Card Row 3 */}
+            <div className="lg:col-span-4 lg:row-start-3" key={`status-${plantSwapKey}`}>
               <div className="animate-fadeIn">
                 <StatusCard
                   disease={plantData?.disease ?? 'Unknown'}

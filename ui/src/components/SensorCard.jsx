@@ -83,7 +83,7 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
   return (
     <div
       className={[
-        'relative min-h-[220px] overflow-hidden rounded-[2.5rem] border bg-gray-900/40',
+        'relative h-full overflow-hidden rounded-[2.5rem] border bg-gray-900/40',
         'backdrop-blur-xl transition-all duration-500 group',
         'hover:-translate-y-1 hover:bg-gray-900/60',
         t.border,
@@ -96,9 +96,9 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
       {/* Glass Highlight */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent opacity-30" />
 
-      <div className="relative h-full flex flex-col p-8">
+      <div className="relative h-full flex flex-col p-2">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+          <p className="text-[7px] font-black uppercase tracking-[0.05em] text-gray-500">
             {title}
           </p>
           <div className="text-xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
@@ -112,14 +112,14 @@ const SensorCard = ({ title, value, unit = '', icon = null, tone = 'emerald', me
             max={meterMax} 
             unit={unit} 
             tone={tone} 
-            size={130}
+            size={100}
           />
         </div>
 
         {/* Status Indicator */}
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <div className={['w-1.5 h-1.5 rounded-full animate-pulse', tone === 'emerald' ? 'bg-emerald-400' : tone === 'sky' ? 'bg-sky-400' : tone === 'amber' ? 'bg-amber-400' : 'bg-violet-400'].join(' ')} />
-          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
+        <div className="mt-1 flex items-center justify-center gap-1.5">
+          <div className={['w-1 h-1 rounded-full animate-pulse', tone === 'emerald' ? 'bg-emerald-400' : tone === 'sky' ? 'bg-sky-400' : tone === 'amber' ? 'bg-amber-400' : 'bg-violet-400'].join(' ')} />
+          <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
         </div>
       </div>
     </div>

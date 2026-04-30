@@ -32,9 +32,9 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col`}
       >
-        <div className="p-8">
+        <div className="p-4">
           {/* Logo Section */}
-          <div className="flex items-center gap-4 mb-10">
+          <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-gray-900 text-lg font-bold shadow-lg shadow-emerald-500/30">
               🌱
             </div>
@@ -68,7 +68,7 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
           </nav>
         </div>
 
-        <div className="mt-auto p-8 border-t border-white/5">
+        <div className="mt-auto p-4 border-t border-white/5">
           {/* Status Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 bg-gray-800/30 px-3 py-2 rounded-xl border border-emerald-500/10">

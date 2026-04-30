@@ -16,8 +16,8 @@ const StatusBadge = ({ status, type = 'info', icon = '' }) => {
   };
 
   return (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm backdrop-blur-sm transition-all hover:scale-[1.05] ${typeClasses[type]}`}>
-      {icon && <span className="text-lg">{icon}</span>}
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-[10px] backdrop-blur-sm transition-all hover:scale-[1.05] ${typeClasses[type]}`}>
+      {icon && <span className="text-xs">{icon}</span>}
       {status}
     </div>
   );
