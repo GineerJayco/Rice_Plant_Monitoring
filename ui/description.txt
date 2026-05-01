@@ -42,3 +42,14 @@ Give me a recommendation for this:
 If possible kay prefer ta mi ug dynamic IP (sakto ba akong term) kay like 5 barangays away among greenhouse from school. Since dili namo madala amo prototype kay dako man kaayu nya dili pede sd ibton kay ang irrigation maong ganahan ta mi mobawi sa among website nga mamonitor japon bisag very layo and lahi ang wifi g connectan sa mobile device ug sa amo system
 
 Give me 3 options on what to do with this to connected there hardware system to the website smoothly and remotely.
+
+Update:
+1. Mo prefer ra diay mi nga isend lang gyud sa ESP ang data sa raspi. Then ang raspi ra ang mo fwd sa database kay murag dili na makaya sa ESP if iconnect pa sha sa WiFi kay ubay2 gyud among sensors gud. If okay ra. 
+
+2. Pwede ba daw like butangan diay ug 6 buttons. Plant 1 - 6 na buttons aron ig pndot kay ma kita ra namo dayun ang data. Dili na diay automatic na mo shift2 from plan1 - 6 kay mo take time diay ug catch ug image process ang pi. Bale mahug na naa na tanan dha, na read na. Pindoton nalang asa ang tan awn. 
+
+3. And nag use diay mi ug MQTT broker para ma connect ang raspi ug ang website. Mo send ko ug html for reference. 
+
+4. Sa readings, esp sa temp, humid and soil moisture, possible ra ba na ma show pd sha through graph? Ang temp and humit ky icombine sa usa ka graph using scatter plot. Then another separate graph para soil moisture. 
+
+5. Naa sd mi gi add sa amo hardware very recent lang. monitoring if naa pay tubig among reservoir. High low level lang guru. 

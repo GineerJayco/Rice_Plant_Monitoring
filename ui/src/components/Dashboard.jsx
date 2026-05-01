@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import SensorView from './SensorView';
 import CameraView from './CameraView';
 import StatusDetectionView from './StatusDetectionView';
 import SetupIndicator from './SetupIndicator';
 import HistoricalCharts from './HistoricalCharts';
+import Mqtt from './Mqtt';
 
 /**
  * Dashboard Component
@@ -16,23 +17,30 @@ const Dashboard = ({
   source,
   refreshing,
   error,
-  lastUpdated,
-  plantSwapKey
+  plantSwapKey,
+  plants = [],
+  onPlantSelect,
+  onActivityLog
 }) => {
   const activePlant = plantData?.active_plant ?? 1;
   const plantName = plantData?.plant_name ?? '';
+  const [mqttConnected, setMqttConnected] = useState(false);
 
   const imageUrl = useMemo(() => {
     return plantData?.image_url || `/images/plant${activePlant}.svg`;
   }, [plantData, activePlant]);
 
+  const handleMqttLog = (message) => {
+    onActivityLog?.(message);
+  };
+
   return (
     <main className="flex-1 h-full flex flex-col overflow-y-auto overflow-x-hidden px-2 py-2 sm:px-4 lg:px-6 custom-scrollbar">
       <div className="flex flex-col min-h-full pb-6">
         {/* Header Section */}
-        <div className="mb-3 flex flex-row items-center justify-between gap-4">
-          <div className="animate-slideIn flex items-center gap-4">
-            <div>
+        <div className="mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="animate-slideIn">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
                   Dashboard
@@ -47,13 +55,9 @@ const Dashboard = ({
                   </span>
                 )}
               </div>
-              <p className="text-gray-400 leading-relaxed text-[10px]">
-                Monitoring <span className="text-emerald-300 font-bold text-[10px]">Setup {activePlant}</span>.
-              </p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4 animate-fadeIn">
+            <div className="flex items-center gap-4 animate-fadeIn">
             {/* Global Reservoir Status Banner */}
             <div className="hidden sm:flex items-center gap-3 rounded-xl border border-white/5 bg-gray-900/50 backdrop-blur-md px-4 py-2">
               <span className="text-xl">🚰</span>
@@ -68,10 +72,25 @@ const Dashboard = ({
             <SetupIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
               <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-red-500'} animate-pulse`} />
-              <div className="text-[8px]">
+              <div className="text-[8px] leading-tight">
                 <span className="text-gray-200 font-extrabold">{refreshing ? 'Updating…' : 'Sync: Live'}</span>
+                <div className={mqttConnected ? 'text-emerald-300' : 'text-slate-300'}>
+                  {mqttConnected ? 'Connected' : 'Disconnected'}
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+          <p className="mt-1 text-gray-400 leading-relaxed text-[10px]">
+            Monitoring <span className="text-emerald-300 font-bold text-[10px]">Setup {activePlant}</span>.
+          </p>
+          <div className="mt-2">
+            <Mqtt
+              onLog={handleMqttLog}
+              compact
+              showStatus={false}
+              onConnectionChange={setMqttConnected}
+            />
           </div>
         </div>
 
@@ -87,8 +106,11 @@ const Dashboard = ({
                   imageUrl={imageUrl}
                   activePlant={activePlant}
                   plantName={plantName}
+                  plants={plants}
+                  onPlantSelect={onPlantSelect}
                   isLoading={refreshing && !plantData}
                   source={source}
+                  timestamp={plantData?.timestamp ?? ''}
                 />
               </div>
             </div>

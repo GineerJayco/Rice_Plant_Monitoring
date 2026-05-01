@@ -8,6 +8,8 @@ const CameraView = ({
   imageUrl,
   activePlant = 1,
   plantName = '',
+  plants = [],
+  onPlantSelect,
   isLoading = false,
   source = 'api',
   timestamp = '',
@@ -52,7 +54,7 @@ const CameraView = ({
 
         <div className="absolute bottom-0 inset-x-0 z-20 p-3 flex items-center justify-between gap-3">
           <div className="text-[8px] text-gray-300 font-medium">
-            Setup <span className="text-emerald-300">1-6</span> Rotates
+            Setup <span className="text-emerald-300">{activePlant}</span> selected
           </div>
           <div className="hidden sm:flex items-center gap-1.5 text-[8px] text-gray-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
@@ -68,6 +70,47 @@ const CameraView = ({
           </p>
         </div>
       ) : null}
+
+      <div className="border-t border-white/10 bg-gray-950/70 p-3">
+        <p className="mb-2 text-[8px] uppercase tracking-widest text-slate-400">
+          All plants - click to enlarge
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {Array.from({ length: 6 }, (_, i) => i + 1).map((plantNumber) => {
+            const plantData = plants.find((plant) => plant.active_plant === plantNumber);
+            const thumbSrc = plantData?.image_url || `/images/plant${plantNumber}.svg`;
+            const isActive = activePlant === plantNumber;
+
+            return (
+              <button
+                type="button"
+                key={plantNumber}
+                onClick={() => onPlantSelect?.(plantNumber)}
+                className={`overflow-hidden rounded-lg border text-left transition ${
+                  isActive
+                    ? 'border-emerald-400/70'
+                    : 'border-white/10 hover:border-sky-400/60'
+                }`}
+              >
+                <img
+                  src={thumbSrc}
+                  alt={`Plant ${plantNumber}`}
+                  className="h-20 w-full object-cover bg-gray-950"
+                  onError={(e) => {
+                    e.currentTarget.src = `/images/plant${plantNumber}.svg`;
+                  }}
+                  loading="lazy"
+                />
+                <div className={`px-1.5 py-1 text-center text-[9px] font-semibold ${
+                  isActive ? 'text-emerald-300' : 'text-slate-400'
+                }`}>
+                  Plant {plantNumber}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };

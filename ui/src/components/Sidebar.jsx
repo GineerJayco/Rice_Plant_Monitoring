@@ -6,7 +6,14 @@ import logoImage from '../assets/2.png';
  * - Replaces the top navbar with a sleek, vertical navigation.
  * - Collapsible on mobile.
  */
-const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, lastUpdated = null }) => {
+const Sidebar = ({
+  selectedPlant = 1,
+  setSelectedPlant,
+  refreshing = false,
+  lastUpdated = null,
+  activeView = 'dashboard',
+  setActiveView
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -42,17 +49,21 @@ const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, last
               </h1>
             </div>
           </div>
-
           {/* Navigation Links */}
           <nav className="space-y-4">
             <div>
               <p className="px-4 text-[10px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-2">Main</p>
-              <a
-                href="#"
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider"
+              <button
+                type="button"
+                onClick={() => setActiveView?.('dashboard')}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-colors ${
+                  activeView === 'dashboard'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'text-gray-500 border-transparent hover:bg-white/5 hover:text-white'
+                }`}
               >
                 <span className="text-base">📊</span> Dashboard
-              </a>
+              </button>
             </div>
 
             <div>
@@ -61,9 +72,12 @@ const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, last
                 {[1, 2, 3, 4, 5, 6].map(num => (
                   <button
                     key={num}
-                    onClick={() => setSelectedPlant(num)}
+                    onClick={() => {
+                      setSelectedPlant(num);
+                      setActiveView?.('dashboard');
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                      selectedPlant === num
+                      selectedPlant === num && activeView === 'dashboard'
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
                     }`}
@@ -75,12 +89,17 @@ const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, last
             </div>
             
             <div className="pt-4">
-              <a
-                href="#"
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
+              <button
+                type="button"
+                onClick={() => setActiveView?.('logs')}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-colors ${
+                  activeView === 'logs'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : 'text-gray-500 hover:bg-white/5 hover:text-white border-transparent'
+                }`}
               >
-                <span className="text-base">⚙️</span> Settings
-              </a>
+                <span className="text-base">🧾</span> Activity Logs
+              </button>
             </div>
           </nav>
         </div>

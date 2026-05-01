@@ -1,86 +1,98 @@
 import mqtt from 'mqtt';
 
 /**
- * Skeleton MQTT Service for Intelligent Irrigation
- * 
- * Replace 'ws://broker.emqx.io:8083/mqtt' with your actual MQTT broker WebSocket URL.
- * Ensure your broker supports WebSockets (ws:// or wss://) because standard
- * raw TCP MQTT (mqtt://) does not work directly inside a web browser.
+ * MQTT Service for browser dashboard connection using WebSockets.
  */
 
-// Example configuration
-const MQTT_BROKER_URL = import.meta.env.VITE_MQTT_BROKER_URL || 'ws://broker.emqx.io:8083/mqtt';
-const MQTT_TOPIC_BASE = 'thesis/intelligent_irrigation';
+const DEFAULT_MQTT_URL = import.meta.env.VITE_MQTT_BROKER_URL || 'ws://localhost:9001/mqtt';
+const DEFAULT_TOPICS = ['rice/sensors', 'rice/image', 'rice/detection'];
 
 let client = null;
 let subscribers = [];
+let unsubscribeStatus = null;
+let unsubscribeError = null;
+let isConnected = false;
 
 /**
- * Connect to the MQTT Broker
+ * Connect to MQTT broker with explicit URL and topic list.
  */
-export const connectMqtt = () => {
-  if (client) return;
+export const connectMqtt = ({
+  brokerUrl = DEFAULT_MQTT_URL,
+  topics = DEFAULT_TOPICS,
+  onStatus,
+  onError
+} = {}) => {
+  if (client && isConnected) return Promise.resolve();
+  if (client && !isConnected) {
+    client.end(true);
+    client = null;
+  }
 
-  console.log(`Connecting to MQTT broker: ${MQTT_BROKER_URL}`);
-  
-  // You might need username/password here depending on your broker setup
-  client = mqtt.connect(MQTT_BROKER_URL, {
+  client = mqtt.connect(brokerUrl, {
     clientId: `react_client_${Math.random().toString(16).slice(3)}`,
     keepalive: 60,
     clean: true,
+    reconnectPeriod: 3000,
   });
 
-  client.on('connect', () => {
-    console.log('Connected to MQTT Broker!');
-    // Subscribe to all topics under the base topic
-    client.subscribe(`${MQTT_TOPIC_BASE}/#`, (err) => {
-      if (!err) {
-        console.log(`Subscribed to ${MQTT_TOPIC_BASE}/#`);
+  unsubscribeStatus = typeof onStatus === 'function' ? onStatus : null;
+  unsubscribeError = typeof onError === 'function' ? onError : null;
+
+  return new Promise((resolve, reject) => {
+    client.once('connect', () => {
+      isConnected = true;
+      if (unsubscribeStatus) unsubscribeStatus(true);
+
+      if (!topics.length) {
+        resolve();
+        return;
+      }
+
+      client.subscribe(topics, (error) => {
+        if (error) {
+          if (unsubscribeError) unsubscribeError(error);
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+
+    client.on('message', (topic, message) => {
+      try {
+        const payloadString = message.toString();
+        let payload = payloadString;
+
+        try {
+          payload = JSON.parse(payloadString);
+        } catch {
+          // Keep string payload if not JSON.
+        }
+
+        subscribers.forEach((callback) => callback(topic, payload));
+      } catch (error) {
+        if (unsubscribeError) unsubscribeError(error);
       }
     });
-  });
 
-  client.on('message', (topic, message) => {
-    // Parse the incoming message
-    try {
-      const payloadString = message.toString();
-      let payload;
-      
-      // Try to parse JSON if possible, otherwise treat as plain string
-      try {
-        payload = JSON.parse(payloadString);
-      } catch (e) {
-        payload = payloadString;
-      }
+    client.on('close', () => {
+      isConnected = false;
+      if (unsubscribeStatus) unsubscribeStatus(false);
+    });
 
-      console.log(`Received message on ${topic}:`, payload);
-      
-      // Notify all React components that are listening
-      subscribers.forEach(callback => callback(topic, payload));
-    } catch (error) {
-      console.error('Error parsing MQTT message:', error);
-    }
-  });
-
-  client.on('error', (err) => {
-    console.error('MQTT Connection Error:', err);
-    client.end();
+    client.on('error', (error) => {
+      if (unsubscribeError) unsubscribeError(error);
+      reject(error);
+    });
   });
 };
 
 /**
  * Subscribe to MQTT messages in your React components
- * 
- * @param {Function} callback - Function to run when a message arrives
- * @returns {Function} - Unsubscribe function to call in useEffect cleanup
  */
 export const subscribeToMqtt = (callback) => {
   subscribers.push(callback);
-  
-  // Ensure connection exists
-  if (!client) connectMqtt();
 
-  // Return unsubscribe function
   return () => {
     subscribers = subscribers.filter(cb => cb !== callback);
   };
@@ -91,14 +103,18 @@ export const subscribeToMqtt = (callback) => {
  */
 export const disconnectMqtt = () => {
   if (client) {
-    client.end();
+    client.end(true);
     client = null;
-    console.log('Disconnected from MQTT Broker');
+    isConnected = false;
+    if (unsubscribeStatus) unsubscribeStatus(false);
   }
 };
+
+export const getConnectionStatus = () => isConnected;
 
 export default {
   connectMqtt,
   subscribeToMqtt,
-  disconnectMqtt
+  disconnectMqtt,
+  getConnectionStatus
 };
