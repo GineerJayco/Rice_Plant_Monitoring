@@ -119,7 +119,7 @@ const Dashboard = ({
             </div>
 
             {/* Sensor Cards Row 2 */}
-            <div className="lg:col-start-3 lg:col-span-2 lg:row-start-2">
+            <div className="lg:col-start-3 lg:row-start-2">
               <SensorView
                 title="Soil Moisture"
                 value={plantData?.soil_moisture ?? '—'}
@@ -128,6 +128,18 @@ const Dashboard = ({
                 tone="emerald"
                 meterMax={100}
                 type="soil"
+              />
+            </div>
+
+            <div className="lg:col-start-4 lg:row-start-2">
+              <SensorView
+                title="Water Level"
+                value={reservoirData?.level ?? '—'}
+                unit="%"
+                icon="🚰"
+                tone="violet"
+                meterMax={100}
+                type="water"
               />
             </div>
 

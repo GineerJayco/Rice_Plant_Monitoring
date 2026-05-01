@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logoImage from '../assets/1.png';
+import logoImage from '../assets/2.png';
 
 /**
  * Sidebar Component
@@ -38,7 +38,7 @@ const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, last
             <img src={logoImage} alt="Intelligent Irrigation Logo" className="w-15 h-10" />
             <div>
               <h1 className="text-sm font-extrabold text-white leading-tight uppercase tracking-wider">
-                Intelligent<br />Irrigation
+                Rice Plant<br />Monitoring
               </h1>
             </div>
           </div>
