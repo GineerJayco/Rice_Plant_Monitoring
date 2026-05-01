@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import logoImage from '../assets/1.png';
 
 /**
  * Sidebar Component
  * - Replaces the top navbar with a sleek, vertical navigation.
  * - Collapsible on mobile.
  */
-const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) => {
+const Sidebar = ({ selectedPlant = 1, setSelectedPlant, refreshing = false, lastUpdated = null }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -34,9 +35,7 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
         <div className="p-4">
           {/* Logo Section */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-gray-900 text-lg font-bold shadow-lg shadow-emerald-500/30">
-              🌱
-            </div>
+            <img src={logoImage} alt="Intelligent Irrigation Logo" className="w-15 h-10" />
             <div>
               <h1 className="text-sm font-extrabold text-white leading-tight uppercase tracking-wider">
                 Intelligent<br />Irrigation
@@ -44,26 +43,45 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
             </div>
           </div>
 
-          {/* Navigation Links (Placeholders for now) */}
-          <nav className="space-y-2">
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider"
-            >
-              <span className="text-base">📊</span> Dashboard
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
-            >
-              <span className="text-base">🌿</span> Setups
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
-            >
-              <span className="text-base">⚙️</span> Settings
-            </a>
+          {/* Navigation Links */}
+          <nav className="space-y-4">
+            <div>
+              <p className="px-4 text-[10px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-2">Main</p>
+              <a
+                href="#"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider"
+              >
+                <span className="text-base">📊</span> Dashboard
+              </a>
+            </div>
+
+            <div>
+              <p className="px-4 text-[10px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-2">Setups</p>
+              <div className="space-y-1">
+                {[1, 2, 3, 4, 5, 6].map(num => (
+                  <button
+                    key={num}
+                    onClick={() => setSelectedPlant(num)}
+                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                      selectedPlant === num
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
+                    }`}
+                  >
+                    <span className="text-sm">{selectedPlant === num ? '🪴' : '🌿'}</span> Setup {num}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="pt-4">
+              <a
+                href="#"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:bg-white/5 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
+              >
+                <span className="text-base">⚙️</span> Settings
+              </a>
+            </div>
           </nav>
         </div>
 
@@ -80,7 +98,7 @@ const Sidebar = ({ activePlant = 1, refreshing = false, lastUpdated = null }) =>
             <div className="px-1">
               <p className="text-[9px] text-gray-600 uppercase font-black tracking-[0.2em] mb-2">Monitor</p>
               <div className="text-[10px] text-gray-500 space-y-1">
-                <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Setup {activePlant}</span>
+                <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Setup {selectedPlant}</span>
                 {lastUpdated && (
                   <div className="flex justify-between items-center opacity-60">
                     <span>{lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

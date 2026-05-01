@@ -64,14 +64,20 @@ export const getCurrentPlantData = async () => {
     const data = await fetchCurrentPlantData();
 
     // If your backend returns "/images/...", prefix it so the browser loads it from the Pi server.
-    const normalized = {
+    // For arrays, we map over the plants
+    const normalizedPlants = data.plants?.map(plant => ({
+      ...plant,
+      image_url: plant.image_url?.startsWith('/')
+        ? resolveImageUrl(plant.image_url)
+        : plant.image_url,
+    })) || [];
+
+    const normalizedData = {
       ...data,
-      image_url: data?.image_url?.startsWith('/')
-        ? resolveImageUrl(data.image_url)
-        : data?.image_url,
+      plants: normalizedPlants
     };
 
-    return { data: normalized, source: 'api', error: null };
+    return { data: normalizedData, source: 'api', error: null };
   } catch (error) {
     // Graceful fallback for thesis demos when backend is offline.
     return { data: mockDataGenerator(), source: 'mock', error };

@@ -3,6 +3,7 @@ import SensorView from './SensorView';
 import CameraView from './CameraView';
 import StatusDetectionView from './StatusDetectionView';
 import SetupIndicator from './SetupIndicator';
+import HistoricalCharts from './HistoricalCharts';
 
 /**
  * Dashboard Component
@@ -11,6 +12,7 @@ import SetupIndicator from './SetupIndicator';
  */
 const Dashboard = ({
   plantData,
+  reservoirData,
   source,
   refreshing,
   error,
@@ -25,8 +27,8 @@ const Dashboard = ({
   }, [plantData, activePlant]);
 
   return (
-    <main className="flex-1 h-full flex flex-col overflow-hidden px-2 py-2 sm:px-4 lg:px-6">
-      <div className="flex flex-col h-full">
+    <main className="flex-1 h-full flex flex-col overflow-y-auto overflow-x-hidden px-2 py-2 sm:px-4 lg:px-6 custom-scrollbar">
+      <div className="flex flex-col min-h-full pb-6">
         {/* Header Section */}
         <div className="mb-3 flex flex-row items-center justify-between gap-4">
           <div className="animate-slideIn flex items-center gap-4">
@@ -52,6 +54,17 @@ const Dashboard = ({
           </div>
 
           <div className="flex items-center gap-4 animate-fadeIn">
+            {/* Global Reservoir Status Banner */}
+            <div className="hidden sm:flex items-center gap-3 rounded-xl border border-white/5 bg-gray-900/50 backdrop-blur-md px-4 py-2">
+              <span className="text-xl">🚰</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase tracking-wider text-gray-500 font-bold">Reservoir</span>
+                <span className={`text-xs font-black tracking-tight ${reservoirData?.status === 'LOW' ? 'text-red-400' : 'text-blue-400'}`}>
+                  {reservoirData?.status || 'UNKNOWN'}
+                </span>
+              </div>
+            </div>
+
             <SetupIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
               <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-red-500'} animate-pulse`} />
@@ -65,8 +78,8 @@ const Dashboard = ({
 
 
         {/* Bento Layout */}
-        <div className="flex-1">
-          <div className="grid grid-cols-1 gap-4 h-full lg:grid-cols-4 lg:grid-rows-[repeat(2,1fr)_auto]">
+        <div className="flex-1 mt-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 lg:grid-rows-[repeat(2,1fr)_auto_auto]">
             {/* Camera Feed */}
             <div className="lg:col-span-2 lg:row-span-2" key={`image-${plantSwapKey}`}>
               <div className="animate-fadeIn h-full">
@@ -106,7 +119,7 @@ const Dashboard = ({
             </div>
 
             {/* Sensor Cards Row 2 */}
-            <div className="lg:col-start-3 lg:row-start-2">
+            <div className="lg:col-start-3 lg:col-span-2 lg:row-start-2">
               <SensorView
                 title="Soil Moisture"
                 value={plantData?.soil_moisture ?? '—'}
@@ -115,18 +128,6 @@ const Dashboard = ({
                 tone="emerald"
                 meterMax={100}
                 type="soil"
-              />
-            </div>
-
-            <div className="lg:col-start-4 lg:row-start-2">
-              <SensorView
-                title="Water Level"
-                value={plantData?.water_level ?? '—'}
-                unit="%"
-                icon="🚰"
-                tone="violet"
-                meterMax={100}
-                type="water"
               />
             </div>
 
@@ -139,6 +140,13 @@ const Dashboard = ({
                   timestamp={plantData?.timestamp ?? ''}
                   source={source}
                 />
+              </div>
+            </div>
+
+            {/* Historical Charts Row 4 */}
+            <div className="lg:col-span-4 lg:row-start-4 mt-2">
+              <div className="h-[280px]">
+                <HistoricalCharts activePlant={activePlant} />
               </div>
             </div>
           </div>
