@@ -11,7 +11,7 @@ const DiseaseDetectionSummary = ({ plants = [] }) => {
       <div className="flex items-center gap-2 flex-shrink-0">
         <div className="w-1 h-4 bg-emerald-400 rounded-full"></div>
         <h3 className="text-[10px] font-black text-slate-300 tracking-[0.15em] uppercase">
-          Disease Detection
+          Disease Detection Summary
         </h3>
       </div>
 
@@ -76,11 +76,10 @@ const DiseaseDetectionSummary = ({ plants = [] }) => {
                     {isHealthy ? '0' : '1'}
                   </span>
                   <span
-                    className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full w-fit ${
-                      isHealthy
+                    className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full w-fit ${isHealthy
                         ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                         : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                    }`}
+                      }`}
                   >
                     {isHealthy ? 'Healthy' : 'Detected'}
                   </span>
