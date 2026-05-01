@@ -56,7 +56,7 @@ function App() {
 
   useEffect(() => {
     const now = new Date().toLocaleTimeString();
-    setActivityLogs((previous) => [`[${now}] Viewing setup ${selectedPlant}.`, ...previous].slice(0, 80));
+    setActivityLogs((previous) => [`[${now}] Viewing plant ${selectedPlant}.`, ...previous].slice(0, 80));
   }, [selectedPlant]);
 
   useEffect(() => {

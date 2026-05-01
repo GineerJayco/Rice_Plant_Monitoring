@@ -14,7 +14,7 @@ const CameraView = ({
   source = 'api',
   timestamp = '',
 }) => {
-  const subtitle = plantName ? `Setup ${activePlant} - ${plantName}` : `Setup ${activePlant}`;
+  const subtitle = plantName ? `Plant ${activePlant} - ${plantName}` : `Plant ${activePlant}`;
 
   return (
     <div className="relative h-full min-h-[400px] overflow-hidden rounded-3xl border border-white/10 bg-gray-950/40 backdrop-blur-md shadow-2xl shadow-emerald-500/10">
@@ -54,7 +54,7 @@ const CameraView = ({
 
         <div className="absolute bottom-0 inset-x-0 z-20 p-3 flex items-center justify-between gap-3">
           <div className="text-[8px] text-gray-300 font-medium">
-            Setup <span className="text-emerald-300">{activePlant}</span> selected
+            Plant <span className="text-emerald-300">{activePlant}</span> selected
           </div>
           <div className="hidden sm:flex items-center gap-1.5 text-[8px] text-gray-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />

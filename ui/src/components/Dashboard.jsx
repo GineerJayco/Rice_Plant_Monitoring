@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import SensorView from './SensorView';
+import EspReadings from './EspReadings';
 import CameraView from './CameraView';
-import StatusDetectionView from './StatusDetectionView';
+import DiseaseDetection from './DiseaseDetection';
+import DiseaseDetectionSummary from './DiseaseDetectionSummary';
 import SetupIndicator from './SetupIndicator';
 import HistoricalCharts from './HistoricalCharts';
 import Mqtt from './Mqtt';
@@ -50,8 +51,8 @@ const Dashboard = ({
                   </span>
                 </h2>
                 {error && (
-                  <span className="animate-pulse flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold text-amber-400 border border-amber-500/20" title={error}>
-                    ⚠️ Connection Warning
+                  <span className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold text-amber-400 border border-amber-500/20" title={error}>
+                    ⚠️ Not Connected — Providing Mock Data
                   </span>
                 )}
               </div>
@@ -81,9 +82,6 @@ const Dashboard = ({
             </div>
           </div>
         </div>
-          <p className="mt-1 text-gray-400 leading-relaxed text-[10px]">
-            Monitoring <span className="text-emerald-300 font-bold text-[10px]">Setup {activePlant}</span>.
-          </p>
           <div className="mt-2">
             <Mqtt
               onLog={handleMqttLog}
@@ -92,13 +90,16 @@ const Dashboard = ({
               onConnectionChange={setMqttConnected}
             />
           </div>
+          <p className="mt-1 text-gray-400 leading-relaxed text-[10px]">
+            Monitoring <span className="text-emerald-300 font-bold text-[10px]">Plant {activePlant}</span>.
+          </p>
         </div>
 
 
 
         {/* Bento Layout */}
         <div className="flex-1 mt-2">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 lg:grid-rows-[repeat(2,1fr)_auto_auto]">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-4 lg:grid-rows-[200px_200px_auto_auto]">
             {/* Camera Feed */}
             <div className="lg:col-span-2 lg:row-span-2" key={`image-${plantSwapKey}`}>
               <div className="animate-fadeIn h-full">
@@ -117,7 +118,7 @@ const Dashboard = ({
 
             {/* Sensor Cards Row 1 */}
             <div className="lg:col-start-3 lg:row-start-1">
-              <SensorView
+              <EspReadings
                 title="Temperature"
                 value={plantData?.temperature ?? '—'}
                 unit="°C"
@@ -129,7 +130,7 @@ const Dashboard = ({
             </div>
 
             <div className="lg:col-start-4 lg:row-start-1">
-              <SensorView
+              <EspReadings
                 title="Humidity"
                 value={plantData?.humidity ?? '—'}
                 unit="%"
@@ -142,7 +143,7 @@ const Dashboard = ({
 
             {/* Sensor Cards Row 2 */}
             <div className="lg:col-start-3 lg:row-start-2">
-              <SensorView
+              <EspReadings
                 title="Soil Moisture"
                 value={plantData?.soil_moisture ?? '—'}
                 unit="%"
@@ -154,7 +155,7 @@ const Dashboard = ({
             </div>
 
             <div className="lg:col-start-4 lg:row-start-2">
-              <SensorView
+              <EspReadings
                 title="Water Level"
                 value={reservoirData?.level ?? '—'}
                 unit="%"
@@ -168,12 +169,15 @@ const Dashboard = ({
             {/* Disease Status Card Row 3 */}
             <div className="lg:col-span-4 lg:row-start-3" key={`status-${plantSwapKey}`}>
               <div className="animate-fadeIn">
-                <StatusDetectionView
+                <DiseaseDetection
                   disease={plantData?.disease ?? 'Unknown'}
                   diseaseType={plantData?.disease_type ?? null}
                   timestamp={plantData?.timestamp ?? ''}
                   source={source}
                 />
+              </div>
+              <div className="mt-4">
+                <DiseaseDetectionSummary plants={plants} />
               </div>
             </div>
 

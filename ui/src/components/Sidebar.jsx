@@ -67,7 +67,7 @@ const Sidebar = ({
             </div>
 
             <div>
-              <p className="px-4 text-[10px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-2">Setups</p>
+              <p className="px-4 text-[10px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-2">Plants</p>
               <div className="space-y-1">
                 {[1, 2, 3, 4, 5, 6].map(num => (
                   <button
@@ -82,7 +82,7 @@ const Sidebar = ({
                         : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
                     }`}
                   >
-                    <span className="text-sm">{selectedPlant === num ? '🪴' : '🌿'}</span> Setup {num}
+                    <span className="text-sm">{selectedPlant === num ? '🪴' : '🌿'}</span> Plant {num}
                   </button>
                 ))}
               </div>
@@ -117,7 +117,7 @@ const Sidebar = ({
             <div className="px-1">
               <p className="text-[9px] text-gray-600 uppercase font-black tracking-[0.2em] mb-2">Monitor</p>
               <div className="text-[10px] text-gray-500 space-y-1">
-                <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Setup {selectedPlant}</span>
+                <span className="font-bold text-emerald-500/80 uppercase tracking-tighter">Plant {selectedPlant}</span>
                 {lastUpdated && (
                   <div className="flex justify-between items-center opacity-60">
                     <span>{lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
