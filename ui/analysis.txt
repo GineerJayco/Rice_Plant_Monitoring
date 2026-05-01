@@ -1,0 +1,64 @@
+Smart Irrigation Dashboard Analysis
+Based on the requirements outlined in description.txt, here is an analysis of the current website's capabilities and the recommended next steps.
+
+Capability Analysis: Is the website capable?
+YES, the current website is highly capable of fulfilling the client's needs.
+
+Here is a breakdown of how the current codebase matches the requirements:
+
+Monitor 5 Parameters:
+
+Requirement: Humidity, Temperature, Soil Moisture, Water Level, and Disease Presence.
+Current State: ✅ The Dashboard.jsx component has dedicated, color-coded sensor cards for Temperature, Humidity, Soil Moisture, and Water Level. It also has a StatusCard specifically for Disease detection and an ImageCard to show the Raspberry Pi camera feed.
+6 Setups (Plants):
+
+Requirement: Monitor 6 different setups (Setup 3 & 4 with 3 samples each).
+Current State: ✅ The UI is built to handle dynamic active_plant data. The Sidebar and Dashboard components dynamically update to show whichever plant (1-6) is currently active.
+Automatic Rotation:
+
+Requirement: The UI needs to show the data for the plant the camera is currently looking at, then automatically switch when the camera rotates to the next plant.
+Current State: ✅ The App.jsx file is already set up to poll the backend every 3 seconds (setInterval(..., 3000)). If the Raspberry Pi backend changes the active_plant value in its JSON response (as the camera rotates), the React website will automatically detect this, trigger a smooth transition (plantSwapKey), and display the new plant's image and sensor readings without requiring a page refresh.
+Plain Monitoring (No Controls):
+
+Requirement: No buttons or controls needed to send commands to the hardware.
+Current State: ✅ The UI is purely read-only, matching this requirement perfectly.
+Next Steps
+Since the UI is functionally ready to display the required data, the next steps involve backend integration and making the system accessible remotely.
+
+1. Ensure Backend API Compatibility
+The UI expects the Raspberry Pi backend to provide data in a specific JSON format at the /api/current-data endpoint. You need to ensure the Python code on your Raspberry Pi returns JSON like this:
+
+json
+{
+  "active_plant": 1,
+  "temperature": 28.5,
+  "humidity": 65,
+  "soil_moisture": 45,
+  "water_level": 80,
+  "disease": "Negative",
+  "disease_type": null,
+  "image_url": "/images/current_capture.jpg",
+  "timestamp": "2026-04-30T12:00:00Z"
+}
+The active_plant number should change in your Python code as the camera physically rotates.
+
+2. Solve the "Remote Access" Requirement
+The client needs to access the site from 5 barangays away on a different network. Since the prototype uses a dynamic IP, you cannot easily expose the Raspberry Pi directly.
+
+Recommended Solution: Cloudflare Tunnels (Free & Reliable)
+
+Install cloudflared on the Raspberry Pi.
+It creates a secure tunnel from your Pi to the internet and gives you a standard web URL (e.g., https://my-thesis-irrigation.trycloudflare.com).
+Unlike Ngrok's free tier, Cloudflare Tunnels won't time out or forcefully change the URL constantly during your defense.
+You will update your React app's .env file to set VITE_API_URL to this Cloudflare URL.
+3. Deploy the Website (Frontend)
+Currently, you are running npm run dev to see the site locally. For a thesis defense and easy access:
+
+Build the React app (npm run build).
+Host the frontend on a free service like Vercel, Netlify, or GitHub Pages.
+This way, the client just opens https://your-irrigation-dashboard.vercel.app on their phone or laptop anywhere in the world, and it will fetch real-time data from the Raspberry Pi via the secure tunnel.
+4. End-to-End Testing
+Connect all ESP32 sensors to the Raspberry Pi.
+Run the ML model and rotation script.
+Open the deployed website on a mobile phone using mobile data (to simulate being far away).
+Verify that as the camera rotates, the website updates automatically with the correct values and image.

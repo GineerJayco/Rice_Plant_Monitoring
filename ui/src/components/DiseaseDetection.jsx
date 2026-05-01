@@ -1,16 +1,19 @@
 import React from 'react';
-import StatusBadge from './StatusBadge';
 
 /**
- * StatusCard Component
- * Wide bento card that highlights disease detection result.
+ * StatusDetectionView Component
+ * Merged disease status card and badge view.
  */
-const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', source = 'api' }) => {
+const StatusDetectionView = ({ disease = 'Negative', diseaseType = null, timestamp = '', source = 'api' }) => {
   const isPositive = String(disease).toLowerCase() === 'positive';
 
   const accent = isPositive
     ? 'from-red-500/15 via-red-500/5 to-gray-950 border-red-500/30 shadow-red-500/15'
     : 'from-emerald-500/15 via-emerald-500/5 to-gray-950 border-emerald-500/30 shadow-emerald-500/15';
+
+  const badgeClasses = isPositive
+    ? 'bg-red-500/20 border border-red-500/50 text-red-300 shadow-lg shadow-red-500/10'
+    : 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10';
 
   return (
     <div className={`relative overflow-hidden rounded-3xl border bg-gradient-to-br ${accent} p-3 backdrop-blur-md shadow-2xl transition-all duration-300 hover:scale-[1.01]`}>
@@ -29,6 +32,11 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[8px] text-gray-400">
+            {diseaseType ? (
+              <span>
+                Type: <span className="text-gray-200 font-semibold">{diseaseType}</span>
+              </span>
+            ) : null}
             {timestamp ? (
               <span>
                 Time: <span className="text-gray-200 font-semibold">{timestamp}</span>
@@ -45,15 +53,14 @@ const StatusCard = ({ disease = 'Negative', diseaseType = null, timestamp = '', 
           <div className={`text-2xl ${isPositive ? 'animate-pulse' : ''}`}>
             {isPositive ? '🦠' : '🌿'}
           </div>
-          <StatusBadge
-            status={isPositive ? 'ALERT' : 'OK'}
-            type={isPositive ? 'danger' : 'success'}
-            icon={isPositive ? '⚠️' : '✓'}
-          />
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-[10px] backdrop-blur-sm transition-all hover:scale-[1.05] ${badgeClasses}`}>
+            <span className="text-xs">{isPositive ? '⚠️' : '✓'}</span>
+            {isPositive ? 'ALERT' : 'OK'}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default StatusCard;
+export default StatusDetectionView;
