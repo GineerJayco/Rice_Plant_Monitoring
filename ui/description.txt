@@ -38,4 +38,7 @@ After pila ka secs kay mobalhin napd ang tutok sa cam, sa plant 2 na pd. Mo show
 
 Plain monitoring ra gyud ni sha, wala ramiy need na controls from website to hardware. 
 
+Give me a recommendation for this:
 If possible kay prefer ta mi ug dynamic IP (sakto ba akong term) kay like 5 barangays away among greenhouse from school. Since dili namo madala amo prototype kay dako man kaayu nya dili pede sd ibton kay ang irrigation maong ganahan ta mi mobawi sa among website nga mamonitor japon bisag very layo and lahi ang wifi g connectan sa mobile device ug sa amo system
+
+Give me 3 options on what to do with this to connected there hardware system to the website smoothly and remotely.
