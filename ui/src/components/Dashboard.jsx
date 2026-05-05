@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import EspReadings from './EspReadings';
 import CameraView from './CameraView';
 import DiseaseDetection from './DiseaseDetection';
@@ -59,17 +59,6 @@ const Dashboard = ({
             </div>
 
             <div className="flex items-center gap-4 animate-fadeIn">
-            {/* Global Reservoir Status Banner */}
-            <div className="hidden sm:flex items-center gap-3 rounded-xl border border-white/5 bg-gray-900/50 backdrop-blur-md px-4 py-2">
-              <span className="text-xl">🚰</span>
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase tracking-wider text-gray-500 font-bold">Reservoir</span>
-                <span className={`text-xs font-black tracking-tight ${reservoirData?.status === 'LOW' ? 'text-red-400' : 'text-blue-400'}`}>
-                  {reservoirData?.status || 'UNKNOWN'}
-                </span>
-              </div>
-            </div>
-
             <SetupIndicator activePlant={activePlant} />
             <div className="hidden sm:flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md px-3 py-1.5">
               <div className={`h-2 w-2 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-red-500'} animate-pulse`} />
@@ -182,7 +171,7 @@ const Dashboard = ({
                   <div className="w-1 h-4 bg-amber-400 rounded-full"></div>
                   <span className="text-[10px] font-black text-slate-300 tracking-[0.15em] uppercase">ESP32 Sensor Readings</span>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   <EspReadings
                     title="Temperature"
                     value={plantData?.temperature ?? '—'}
@@ -219,6 +208,15 @@ const Dashboard = ({
                     meterMax={100}
                     type="water"
                   />
+                  <EspReadings
+                    title="Reservoir Water Level"
+                    value={reservoirData?.status ?? '—'}
+                    unit=""
+                    icon="🚰"
+                    tone="sky"
+                    meterMax={100}
+                    type="reservoir"
+                  />
                 </div>
               </div>
             </div>
@@ -241,4 +239,3 @@ const Dashboard = ({
 };
 
 export default Dashboard;
-

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SemiCircleGauge from './SemiCircleGauge';
 import SparklineChart from './SparklineChart';
 import VerticalTank from './VerticalTank';
+import ReservoirVerticalTank from './ReservoirVerticalTank';
 import SegmentedBar from './SegmentedBar';
 
 /**
@@ -121,10 +122,13 @@ const SensorView = ({
           {type === 'water' && (
             <VerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
           )}
+          {type === 'reservoir' && (
+            <ReservoirVerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
+          )}
           {type === 'soil' && (
             <SegmentedBar value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
           )}
-          {!['temperature', 'humidity', 'water', 'soil'].includes(type) && (
+          {!['temperature', 'humidity', 'water', 'reservoir', 'soil'].includes(type) && (
             <div className="flex items-baseline gap-2">
               <span className={`text-4xl font-bold ${t.text}`}>{isNumeric ? Math.round(displayValue) : displayValue}</span>
               {unit ? <span className={`text-lg font-semibold ${t.text}/70`}>{unit}</span> : null}
