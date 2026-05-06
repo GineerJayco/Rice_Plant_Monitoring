@@ -46,6 +46,10 @@ const useAnimatedNumber = (value, durationMs = 550) => {
 /**
  * SensorView Component
  * Merged SensorCard + DataCard behavior into one reusable sensor panel.
+ *
+ * Props:
+ *   title, value, unit, icon, tone, meterMax, type
+ *   mqttSource (optional) — if true, shows an MQTT badge
  */
 const SensorView = ({
   title,
@@ -55,6 +59,7 @@ const SensorView = ({
   tone = 'emerald',
   meterMax = 100,
   type = 'default',
+  mqttSource = false,
 }) => {
   const isNumeric = useMemo(() => Number.isFinite(Number(value)), [value]);
   const animatedValue = useAnimatedNumber(isNumeric ? Number(value) : value);
@@ -138,7 +143,9 @@ const SensorView = ({
 
         <div className="mt-1 flex items-center justify-center gap-1.5">
           <div className={['w-1 h-1 rounded-full animate-pulse', tone === 'emerald' ? 'bg-emerald-400' : tone === 'sky' ? 'bg-sky-400' : tone === 'amber' ? 'bg-amber-400' : 'bg-violet-400'].join(' ')} />
-          <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
+          <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest">
+            {mqttSource ? 'MQTT' : 'Stable'}
+          </span>
         </div>
       </div>
     </div>
