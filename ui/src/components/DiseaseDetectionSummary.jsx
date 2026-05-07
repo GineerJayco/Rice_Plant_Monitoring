@@ -135,13 +135,12 @@ const DiseaseDetectionSummary = ({ plants = [], plantDetections = {}, mqttConnec
                 {row.hasData ? row.sheathBlight : '—'}
               </span>
               <span
-                className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full w-fit ${
-                  !row.hasData
+                className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full w-fit ${!row.hasData
                     ? 'bg-slate-500/15 text-slate-500 border border-slate-500/30'
                     : row.isHealthy
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                }`}
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-red-500/15 text-red-400 border border-red-500/30'
+                  }`}
               >
                 {!row.hasData ? 'Pending' : row.isHealthy ? 'Healthy' : 'Detected'}
               </span>

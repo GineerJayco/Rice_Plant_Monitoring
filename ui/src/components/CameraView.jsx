@@ -28,7 +28,7 @@ const CameraView = ({
   source = 'api',
   timestamp = '',
 }) => {
-  const subtitle = plantName ? `Plant ${activePlant} - ${plantName}` : `Plant ${activePlant}`;
+  const subtitle = `Plant ${activePlant}`;
 
   // When MQTT connected but no image yet → show waiting state
   const isWaitingForMqttImage = mqttConnected && !base64Image;
@@ -57,17 +57,15 @@ const CameraView = ({
             <h2 className="mt-1 text-sm font-extrabold text-white">{subtitle}</h2>
           </div>
 
-          <div className={`flex items-center gap-1.5 rounded-full border px-2 py-1 ${
-            base64Image
+          <div className={`flex items-center gap-1.5 rounded-full border px-2 py-1 ${base64Image
               ? 'border-emerald-500/30 bg-emerald-500/10'
               : mqttConnected
-              ? 'border-amber-500/30 bg-amber-500/10'
-              : 'border-emerald-500/30 bg-emerald-500/10'
-          }`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor} animate-pulse`} />
-            <span className={`text-[8px] font-semibold ${
-              base64Image ? 'text-emerald-300' : mqttConnected ? 'text-amber-300' : 'text-emerald-300'
+                ? 'border-amber-500/30 bg-amber-500/10'
+                : 'border-emerald-500/30 bg-emerald-500/10'
             }`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor} animate-pulse`} />
+            <span className={`text-[8px] font-semibold ${base64Image ? 'text-emerald-300' : mqttConnected ? 'text-amber-300' : 'text-emerald-300'
+              }`}>
               {statusLabel}
             </span>
           </div>
@@ -154,11 +152,10 @@ const CameraView = ({
                 type="button"
                 key={plantNumber}
                 onClick={() => onPlantSelect?.(plantNumber)}
-                className={`overflow-hidden rounded-lg border text-left transition ${
-                  isActive
+                className={`overflow-hidden rounded-lg border text-left transition ${isActive
                     ? 'border-emerald-400/70'
                     : 'border-white/10 hover:border-sky-400/60'
-                }`}
+                  }`}
               >
                 {thumbIsWaiting ? (
                   <div className="h-20 w-full bg-gray-900/80 flex items-center justify-center">
@@ -178,9 +175,8 @@ const CameraView = ({
                     loading="lazy"
                   />
                 )}
-                <div className={`px-1.5 py-1 text-center text-[9px] font-semibold ${
-                  isActive ? 'text-emerald-300' : 'text-slate-400'
-                }`}>
+                <div className={`px-1.5 py-1 text-center text-[9px] font-semibold ${isActive ? 'text-emerald-300' : 'text-slate-400'
+                  }`}>
                   Plant {plantNumber}
                 </div>
               </button>

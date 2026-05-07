@@ -67,7 +67,10 @@ const ReservoirVerticalTank = ({
               `shadow-[0_0_20px_rgba(0,0,0,0.35)]`,
               `from-transparent`,
             ].join(' ')}
-            style={{ height: `${percentage}%` }}
+            style={{ 
+              height: `${percentage}%`,
+              animation: 'rvt-fill 1.5s ease-out forwards'
+            }}
           >
             <div className={`absolute inset-0 bg-gradient-to-b ${t.fill}`} />
 
@@ -96,6 +99,13 @@ const ReservoirVerticalTank = ({
         </div>
         <div className="mt-1 text-[8px] font-bold uppercase tracking-widest text-gray-500">Reservoir</div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes rvt-fill {
+          from { height: 0%; }
+          to { height: ${percentage}%; }
+        }
+      `}} />
     </div>
   );
 };

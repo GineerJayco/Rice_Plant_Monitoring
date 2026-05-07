@@ -56,13 +56,23 @@ const SemiCircleGauge = ({
           stroke={`url(#sc-gradient-${tone})`}
           strokeWidth="8"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          strokeDashoffset={circumference}
           strokeLinecap="round"
           fill="none"
           filter={`url(#sc-glow-${tone})`}
           className="transition-all duration-1000 ease-out"
+          style={{ 
+            animation: `sc-draw-${tone} 1.5s ease-out forwards`,
+          }}
         />
       </svg>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes sc-draw-${tone} {
+          from { stroke-dashoffset: ${circumference}; }
+          to { stroke-dashoffset: ${offset}; }
+        }
+      `}} />
       
       {/* Central Content */}
       <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-center text-center">

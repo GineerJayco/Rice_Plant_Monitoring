@@ -8,6 +8,7 @@ import HistoricalCharts from './HistoricalCharts';
 import Mqtt from './Mqtt';
 import MqttStatus from './MqttStatus';
 import useMqttData from '../hooks/useMqttData';
+import Activitylog from './Activitylog';
 
 /**
  * Dashboard Component
@@ -24,7 +25,8 @@ const Dashboard = ({
   plantSwapKey,
   plants = [],
   onPlantSelect,
-  onActivityLog
+  onActivityLog,
+  logs = [], // Added logs prop
 }) => {
   const activePlant = plantData?.active_plant ?? 1;
   const plantName = plantData?.plant_name ?? '';
@@ -108,14 +110,12 @@ const Dashboard = ({
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
                   Dashboard
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-bold border ${
-                    mqttIsConnected
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-bold border ${mqttIsConnected
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                       : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                  }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                      mqttIsConnected ? 'bg-emerald-500' : 'bg-amber-500'
-                    }`} />
+                    }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${mqttIsConnected ? 'bg-emerald-500' : 'bg-amber-500'
+                      }`} />
                     {mqttIsConnected ? 'Live' : 'Mock'}
                   </span>
                 </h2>
@@ -134,7 +134,7 @@ const Dashboard = ({
                 <div className={`h-2 w-2 rounded-full ${mqttIsConnected ? 'bg-emerald-500' : 'bg-amber-400'} animate-pulse`} />
                 <div className="text-[8px] leading-tight">
                   <span className="text-gray-200 font-extrabold">
-                    {mqttIsConnected ? 'MQTT Live' : 'Mock Mode'}
+                    {mqttIsConnected ? 'HiveMQ Cloud Live' : 'Mock Mode'}
                   </span>
                   <div className={mqttIsConnected ? 'text-emerald-300' : 'text-amber-300'}>
                     {mqttIsConnected ? 'Connected' : 'Disconnected'}
@@ -143,34 +143,34 @@ const Dashboard = ({
               </div>
             </div>
           </div>
-            <div className="mt-2">
-              <Mqtt
-                onLog={handleMqttLog}
-                compact
-                showStatus={false}
-                onConnectionChange={setMqttConnected}
-              />
-            </div>
-            <p className="mt-1 text-gray-400 leading-relaxed text-[10px]">
-              Monitoring <span className="text-emerald-300 font-bold text-[10px]">Plant {activePlant}</span>
-              {mqttIsConnected && hasMqttSensors && lastSensorTime && (
-                <span className="text-gray-500 ml-2">
-                  · Last sensor update: <span className="text-emerald-400/70">{lastSensorTime.toLocaleTimeString()}</span>
-                </span>
-              )}
-              {mqttIsConnected && !hasMqttSensors && (
-                <span className="text-amber-400/60 ml-2">
-                  · Waiting for sensor data from Raspberry Pi...
-                </span>
-              )}
-            </p>
+          <div className="mt-2">
+            <Mqtt
+              onLog={handleMqttLog}
+              compact
+              showStatus={false}
+              onConnectionChange={setMqttConnected}
+            />
+          </div>
+          <p className="mt-1 text-gray-400 leading-relaxed text-[10px]">
+            Monitoring <span className="text-emerald-300 font-bold text-[10px]">Plant {activePlant}</span>
+            {mqttIsConnected && hasMqttSensors && lastSensorTime && (
+              <span className="text-gray-500 ml-2">
+                · Last sensor update: <span className="text-emerald-400/70">{lastSensorTime.toLocaleTimeString()}</span>
+              </span>
+            )}
+            {mqttIsConnected && !hasMqttSensors && (
+              <span className="text-amber-400/60 ml-2">
+                · Waiting for sensor data from Raspberry Pi...
+              </span>
+            )}
+          </p>
         </div>
 
 
 
         {/* Bento Layout */}
         <div className="flex-1 mt-2">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-4 lg:grid-rows-[200px_200px_auto_auto]">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-4 lg:grid-rows-[200px_200px_auto_auto_auto]">
             {/* Camera Feed */}
             <div className="lg:col-span-2 lg:row-span-2" key={`image-${plantSwapKey}`}>
               <div className="animate-fadeIn h-full">
@@ -202,7 +202,7 @@ const Dashboard = ({
             </div>
 
             {/* Plant Strip + Disease Status Row 3 */}
-            <div className="lg:col-span-4 lg:row-start-3" key={`status-${plantSwapKey}`}>
+            <div className="lg:col-span-4 lg:row-start-3">
 
               {/* Horizontal 6-plant bento strip */}
               <div className="flex gap-2 mb-3 overflow-x-auto pb-1 custom-scrollbar">
@@ -227,11 +227,10 @@ const Dashboard = ({
                       key={num}
                       type="button"
                       onClick={() => onPlantSelect?.(num)}
-                      className={`relative flex-shrink-0 w-[calc(16.666%-6px)] min-w-[100px] rounded-xl overflow-hidden border-2 transition-all duration-200 group ${
-                        isActive
+                      className={`relative flex-shrink-0 w-[calc(16.666%-6px)] min-w-[100px] rounded-xl overflow-hidden border-2 transition-all duration-200 group ${isActive
                           ? 'border-emerald-400 shadow-lg shadow-emerald-500/30 scale-[1.03]'
                           : 'border-white/10 hover:border-sky-400/50 hover:scale-[1.02]'
-                      }`}
+                        }`}
                     >
                       {thumbIsWaiting ? (
                         <div className="w-full h-20 bg-gray-900/80 flex items-center justify-center">
@@ -250,15 +249,13 @@ const Dashboard = ({
                       )}
                       {/* Disease dot */}
                       {(p || mqttDet) && !thumbIsWaiting && (
-                        <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${
-                          isDisease ? 'bg-red-400' : 'bg-emerald-400'
-                        }`} />
+                        <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${isDisease ? 'bg-red-400' : 'bg-emerald-400'
+                          }`} />
                       )}
-                      <div className={`absolute bottom-0 inset-x-0 py-1 text-center text-[9px] font-bold uppercase tracking-wider ${
-                        isActive
+                      <div className={`absolute bottom-0 inset-x-0 py-1 text-center text-[9px] font-bold uppercase tracking-wider ${isActive
                           ? 'bg-emerald-500/80 text-white'
                           : 'bg-gray-950/70 text-slate-400 group-hover:text-white'
-                      }`}>
+                        }`}>
                         Plant {num}
                       </div>
                     </button>
@@ -297,18 +294,18 @@ const Dashboard = ({
                   <span className="text-[10px] font-black text-slate-300 tracking-[0.15em] uppercase">
                     ESP32 Sensor Readings
                     {mqttIsConnected && (
-                      <span className={`ml-2 text-[7px] font-bold uppercase tracking-widest rounded-full px-1.5 py-0.5 ${
-                        hasMqttSensors
+                      <span className={`ml-2 text-[7px] font-bold uppercase tracking-widest rounded-full px-1.5 py-0.5 ${hasMqttSensors
                           ? 'text-emerald-400/60 bg-emerald-500/10 border border-emerald-500/20'
                           : 'text-amber-400/60 bg-amber-500/10 border border-amber-500/20'
-                      }`}>
-                        {hasMqttSensors ? 'MQTT' : 'WAITING'}
+                        }`}>
+                        {hasMqttSensors ? 'HiveMQ Cloud' : 'WAITING'}
                       </span>
                     )}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   <EspReadings
+                    key={`temp-${plantSwapKey}`}
                     title="Temperature"
                     value={displayTemp}
                     unit="°C"
@@ -319,6 +316,7 @@ const Dashboard = ({
                     mqttSource={mqttIsConnected && hasMqttSensors}
                   />
                   <EspReadings
+                    key={`hum-${plantSwapKey}`}
                     title="Humidity"
                     value={displayHum}
                     unit="%"
@@ -329,6 +327,7 @@ const Dashboard = ({
                     mqttSource={mqttIsConnected && hasMqttSensors}
                   />
                   <EspReadings
+                    key={`soil-${plantSwapKey}`}
                     title="Soil Moisture"
                     value={displaySoil}
                     unit="%"
@@ -339,6 +338,7 @@ const Dashboard = ({
                     mqttSource={mqttIsConnected && hasMqttSensors}
                   />
                   <EspReadings
+                    key={`waterh-${plantSwapKey}`}
                     title="Water Level (Healthy)"
                     value={displayWaterHealthy}
                     unit="%"
@@ -349,6 +349,7 @@ const Dashboard = ({
                     mqttSource={mqttIsConnected && hasMqttSensors}
                   />
                   <EspReadings
+                    key={`waterd-${plantSwapKey}`}
                     title="Water Level (Diseased)"
                     value={displayWaterDiseased}
                     unit="%"
@@ -371,6 +372,14 @@ const Dashboard = ({
               <div className="h-[320px]">
                 <HistoricalCharts activePlant={activePlant} />
               </div>
+            </div>
+
+            <div className="lg:col-span-4 lg:row-start-5 mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-4 bg-emerald-400 rounded-full"></div>
+                <span className="text-[10px] font-black text-slate-300 tracking-[0.15em] uppercase">Activity Logs</span>
+              </div>
+              <Activitylog logs={logs} />
             </div>
           </div>
         </div>

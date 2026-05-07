@@ -86,11 +86,10 @@ const DiseaseDetection = ({
                     {detection.detections.map((det, idx) => (
                       <div
                         key={idx}
-                        className={`grid grid-cols-3 gap-1 px-2 py-1.5 text-[9px] border-t border-white/5 ${
-                          det.class_id === 0
+                        className={`grid grid-cols-3 gap-1 px-2 py-1.5 text-[9px] border-t border-white/5 ${det.class_id === 0
                             ? 'text-emerald-300/90'
                             : 'text-red-300/90'
-                        }`}
+                          }`}
                       >
                         <span className="font-semibold">{det.label}</span>
                         <span>{(det.confidence * 100).toFixed(1)}%</span>

@@ -26,7 +26,7 @@ const MqttStatus = ({ isConnected = false, error = null }) => {
 
       {/* Status text */}
       <span className="uppercase tracking-widest">
-        {isConnected ? 'MQTT Connected' : 'MQTT Disconnected'}
+        {isConnected ? 'HiveMQ Cloud Connected' : 'HiveMQ Cloud Disconnected'}
       </span>
 
       {/* Error detail */}
