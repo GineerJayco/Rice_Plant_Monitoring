@@ -72,11 +72,18 @@ const SparklineChart = ({
         </defs>
         
         {/* Area Fill */}
-        <path d={pathData} fill={`url(#sl-gradient-${tone})`} className="transition-all duration-500" />
+        <path d={pathData} fill={`url(#sl-gradient-${tone})`} className="transition-all duration-500" style={{ animation: 'sl-pop 1s ease-out forwards' }} />
         
         {/* Line */}
-        <path d={lineData} fill="none" stroke={t.gradient[0]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-500" />
+        <path d={lineData} fill="none" stroke={t.gradient[0]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-500" style={{ animation: 'sl-pop 1.2s ease-out forwards' }} />
       </svg>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes sl-pop {
+          from { opacity: 0; transform: translateY(10px) scaleY(0.5); }
+          to { opacity: 1; transform: translateY(0) scaleY(1); }
+        }
+      `}} />
     </div>
   );
 };

@@ -1,47 +1,84 @@
 import mqtt from 'mqtt';
 
 /**
- * MQTT Service for browser dashboard connection using WebSockets.
+ * MQTT Service for browser dashboard connection via HiveMQ Cloud WebSocket.
+ *
+ * Topics (matched to raspicode.txt):
+ *   rice/sensors   — global sensor JSON
+ *   rice/image     — per-plant base64 JPEG
+ *   rice/detection — per-cycle detection summary (all 6 plants)
  */
 
-const DEFAULT_MQTT_URL = import.meta.env.VITE_MQTT_BROKER_URL || 'ws://localhost:9001/mqtt';
-const DEFAULT_TOPICS = ['rice/sensors', 'rice/image', 'rice/detection'];
+// ===== HiveMQ Cloud CONFIGURATION =====
+const BROKER_HOST = import.meta.env.VITE_MQTT_BROKER || 'd0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud';
+const BROKER_PORT = import.meta.env.VITE_MQTT_WEBSOCKET_PORT || 8884;
+const MQTT_USERNAME = import.meta.env.VITE_MQTT_USERNAME || 'thesis_pi';
+const MQTT_PASSWORD = import.meta.env.VITE_MQTT_PASSWORD || 'H@rveypads123';
+
+const MQTT_URL = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
+
+// ===== MQTT TOPICS (match raspicode.txt) =====
+export const TOPICS = {
+  sensors: 'rice/sensors',
+  image: 'rice/image',
+  detection: 'rice/detection',
+};
 
 let client = null;
-let subscribers = [];
-let unsubscribeStatus = null;
-let unsubscribeError = null;
+let messageSubscribers = [];
+let statusSubscribers = [];
 let isConnected = false;
 
 /**
- * Connect to MQTT broker with explicit URL and topic list.
+ * Notify all status subscribers of a connection state change.
+ */
+const notifyStatus = (status) => {
+  isConnected = status;
+  statusSubscribers.forEach((cb) => cb(status));
+};
+
+/**
+ * Subscribe to connection status changes.
+ * Returns an unsubscribe function.
+ */
+export const subscribeToStatus = (callback) => {
+  statusSubscribers.push(callback);
+  return () => {
+    statusSubscribers = statusSubscribers.filter((cb) => cb !== callback);
+  };
+};
+
+/**
+ * Connect to HiveMQ Cloud MQTT broker via WebSocket Secure.
+ * Resolves when connected & subscribed.
  */
 export const connectMqtt = ({
-  brokerUrl = DEFAULT_MQTT_URL,
-  topics = DEFAULT_TOPICS,
-  onStatus,
-  onError
+  brokerUrl = MQTT_URL,
+  topics = Object.values(TOPICS),
+  onError,
 } = {}) => {
   if (client && isConnected) return Promise.resolve();
+
+  // Tear down stale client
   if (client && !isConnected) {
     client.end(true);
     client = null;
   }
 
   client = mqtt.connect(brokerUrl, {
-    clientId: `react_client_${Math.random().toString(16).slice(3)}`,
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
+    clientId: `web_client_${Date.now()}_${Math.random().toString(16).slice(3)}`,
+    reconnectPeriod: 5000,
     keepalive: 60,
     clean: true,
-    reconnectPeriod: 3000,
+    protocolVersion: 4,
   });
-
-  unsubscribeStatus = typeof onStatus === 'function' ? onStatus : null;
-  unsubscribeError = typeof onError === 'function' ? onError : null;
 
   return new Promise((resolve, reject) => {
     client.once('connect', () => {
-      isConnected = true;
-      if (unsubscribeStatus) unsubscribeStatus(true);
+      console.log('[MQTT] ✅ Connected to HiveMQ Cloud');
+      notifyStatus(true);
 
       if (!topics.length) {
         resolve();
@@ -50,10 +87,12 @@ export const connectMqtt = ({
 
       client.subscribe(topics, (error) => {
         if (error) {
-          if (unsubscribeError) unsubscribeError(error);
+          console.error('[MQTT] Subscribe error:', error);
+          if (typeof onError === 'function') onError(error);
           reject(error);
           return;
         }
+        console.log('[MQTT] Subscribed to:', topics.join(', '));
         resolve();
       });
     });
@@ -66,35 +105,41 @@ export const connectMqtt = ({
         try {
           payload = JSON.parse(payloadString);
         } catch {
-          // Keep string payload if not JSON.
+          // Keep string payload if not valid JSON
         }
 
-        subscribers.forEach((callback) => callback(topic, payload));
+        messageSubscribers.forEach((callback) => callback(topic, payload));
       } catch (error) {
-        if (unsubscribeError) unsubscribeError(error);
+        console.error('[MQTT] Message handling error:', error);
+        if (typeof onError === 'function') onError(error);
       }
     });
 
+    client.on('reconnect', () => {
+      console.log('[MQTT] Reconnecting...');
+    });
+
     client.on('close', () => {
-      isConnected = false;
-      if (unsubscribeStatus) unsubscribeStatus(false);
+      notifyStatus(false);
     });
 
     client.on('error', (error) => {
-      if (unsubscribeError) unsubscribeError(error);
+      console.error('[MQTT] Connection error:', error);
+      notifyStatus(false);
+      if (typeof onError === 'function') onError(error);
       reject(error);
     });
   });
 };
 
 /**
- * Subscribe to MQTT messages in your React components
+ * Subscribe to incoming MQTT messages.
+ * Returns an unsubscribe function.
  */
 export const subscribeToMqtt = (callback) => {
-  subscribers.push(callback);
-
+  messageSubscribers.push(callback);
   return () => {
-    subscribers = subscribers.filter(cb => cb !== callback);
+    messageSubscribers = messageSubscribers.filter((cb) => cb !== callback);
   };
 };
 
@@ -105,16 +150,20 @@ export const disconnectMqtt = () => {
   if (client) {
     client.end(true);
     client = null;
-    isConnected = false;
-    if (unsubscribeStatus) unsubscribeStatus(false);
+    notifyStatus(false);
   }
 };
 
+/**
+ * Get current connection status
+ */
 export const getConnectionStatus = () => isConnected;
 
 export default {
   connectMqtt,
   subscribeToMqtt,
+  subscribeToStatus,
   disconnectMqtt,
-  getConnectionStatus
+  getConnectionStatus,
+  TOPICS,
 };

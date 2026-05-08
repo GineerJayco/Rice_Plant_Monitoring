@@ -38,9 +38,22 @@ const SegmentedBar = ({
           <div 
             key={i}
             className={`h-2 flex-1 rounded-sm transition-all duration-500 ${i < activeSegments ? t.active : t.inactive}`}
+            style={{ 
+              animation: `sb-pop 0.3s ease-out forwards`,
+              animationDelay: `${i * 0.1}s`,
+              opacity: 0,
+              transform: 'scaleX(0)'
+            }}
           />
         ))}
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes sb-pop {
+          from { opacity: 0; transform: scaleX(0); }
+          to { opacity: 1; transform: scaleX(1); }
+        }
+      `}} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SemiCircleGauge from './SemiCircleGauge';
 import SparklineChart from './SparklineChart';
 import VerticalTank from './VerticalTank';
+import ReservoirVerticalTank from './ReservoirVerticalTank';
 import SegmentedBar from './SegmentedBar';
 
 /**
@@ -45,6 +46,18 @@ const useAnimatedNumber = (value, durationMs = 550) => {
 /**
  * SensorView Component
  * Merged SensorCard + DataCard behavior into one reusable sensor panel.
+ *
+ * Props:
+ *   title, value, unit, icon, tone, meterMax, type
+ *   mqttSource (optional) — if true, shows an MQTT badge
+ */
+/**
+ * SensorView Component
+ * Merged SensorCard + DataCard behavior into one reusable sensor panel.
+ *
+ * Props:
+ *   title, value, unit, icon, tone, meterMax, type
+ *   mqttSource (optional) — if true, shows an MQTT badge
  */
 const SensorView = ({
   title,
@@ -54,34 +67,53 @@ const SensorView = ({
   tone = 'emerald',
   meterMax = 100,
   type = 'default',
+  mqttSource = false,
 }) => {
   const isNumeric = useMemo(() => Number.isFinite(Number(value)), [value]);
   const animatedValue = useAnimatedNumber(isNumeric ? Number(value) : value);
+  const [showPing, setShowPing] = useState(false);
+
+  // Show a "ping" animation whenever the value changes
+  useEffect(() => {
+    if (value !== null && value !== undefined && value !== '—') {
+      setShowPing(true);
+      const timer = setTimeout(() => setShowPing(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [value]);
 
   const toneClasses = {
     emerald: {
       border: 'border-emerald-500/20 hover:border-emerald-400/50',
       glow: 'shadow-emerald-500/5',
       text: 'text-emerald-400',
-      bg: 'from-emerald-500/5 to-transparent',
+      bg: 'from-emerald-500/10 to-transparent',
+      ping: 'bg-emerald-400',
+      accent: 'emerald',
     },
     sky: {
       border: 'border-sky-500/20 hover:border-sky-400/50',
       glow: 'shadow-sky-500/5',
       text: 'text-sky-400',
-      bg: 'from-sky-500/5 to-transparent',
+      bg: 'from-sky-500/10 to-transparent',
+      ping: 'bg-sky-400',
+      accent: 'sky',
     },
     amber: {
       border: 'border-amber-500/20 hover:border-amber-400/50',
       glow: 'shadow-amber-500/5',
       text: 'text-amber-400',
-      bg: 'from-amber-500/5 to-transparent',
+      bg: 'from-amber-500/10 to-transparent',
+      ping: 'bg-amber-400',
+      accent: 'amber',
     },
     violet: {
       border: 'border-violet-500/20 hover:border-violet-400/50',
       glow: 'shadow-violet-500/5',
       text: 'text-violet-400',
-      bg: 'from-violet-500/5 to-transparent',
+      bg: 'from-violet-500/10 to-transparent',
+      ping: 'bg-violet-400',
+      accent: 'violet',
     },
   };
 
@@ -91,52 +123,96 @@ const SensorView = ({
   return (
     <div
       className={[
-        'relative h-full overflow-hidden rounded-[2.5rem] border bg-gray-900/40',
-        'backdrop-blur-xl transition-all duration-500 group',
-        'hover:-translate-y-1 hover:bg-gray-900/60',
+        'relative h-full overflow-hidden rounded-[2rem] border bg-gray-900/20',
+        'backdrop-blur-xl transition-all duration-700 group',
+        'hover:-translate-y-2 hover:bg-gray-900/40 hover:shadow-2xl',
         t.border,
         t.glow,
       ].join(' ')}
     >
-      <div className={['absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100', t.bg].join(' ')} />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent opacity-30" />
+      {/* Background Glow */}
+      <div className={['absolute -inset-px bg-gradient-to-br opacity-0 transition-opacity duration-700 group-hover:opacity-100', t.bg].join(' ')} />
 
-      <div className="relative h-full flex flex-col p-2">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.05em] text-gray-500">
+      {/* Update Ping Effect */}
+      {showPing && (
+        <div className={`absolute top-2 right-2 h-1 w-1 rounded-full ${t.ping} animate-ping opacity-75`} />
+      )}
+
+      <div className="relative h-full flex flex-col p-4">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400/80">
             {title}
           </p>
-          <div className="text-xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+          <div className="text-2xl transition-all duration-700 group-hover:scale-125 group-hover:rotate-12 animate-float">
             {icon}
           </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center py-2">
           {type === 'temperature' && (
-            <SemiCircleGauge value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+            <div className="transform transition-transform duration-700 group-hover:scale-110">
+              <SemiCircleGauge value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
+            </div>
           )}
           {type === 'humidity' && (
-            <SparklineChart value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+            <div className="transform transition-transform duration-700 group-hover:scale-110">
+              <SparklineChart value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
+            </div>
           )}
           {type === 'water' && (
-            <VerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+            <div className="transform transition-transform duration-700 group-hover:scale-110">
+              <VerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
+            </div>
+          )}
+          {type === 'reservoir' && (
+            <div className="transform transition-transform duration-700 group-hover:scale-110">
+              <ReservoirVerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={120} />
+            </div>
           )}
           {type === 'soil' && (
-            <SegmentedBar value={displayValue} max={meterMax} unit={unit} tone={tone} size={100} />
+            <div className="transform transition-transform duration-700 group-hover:scale-110">
+              <SegmentedBar value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
+            </div>
           )}
-          {!['temperature', 'humidity', 'water', 'soil'].includes(type) && (
-            <div className="flex items-baseline gap-2">
-              <span className={`text-4xl font-bold ${t.text}`}>{isNumeric ? Math.round(displayValue) : displayValue}</span>
-              {unit ? <span className={`text-lg font-semibold ${t.text}/70`}>{unit}</span> : null}
+          {!['temperature', 'humidity', 'water', 'reservoir', 'soil'].includes(type) && (
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-baseline gap-2">
+                <span className={`text-4xl font-black tracking-tighter ${t.text}`}>
+                  {isNumeric ? Math.round(displayValue) : displayValue}
+                </span>
+                {unit ? <span className={`text-lg font-bold ${t.text}/50`}>{unit}</span> : null}
+              </div>
             </div>
           )}
         </div>
 
-        <div className="mt-1 flex items-center justify-center gap-1.5">
-          <div className={['w-1 h-1 rounded-full animate-pulse', tone === 'emerald' ? 'bg-emerald-400' : tone === 'sky' ? 'bg-sky-400' : tone === 'amber' ? 'bg-amber-400' : 'bg-violet-400'].join(' ')} />
-          <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest">Stable</span>
+        <div className="mt-4 flex items-center justify-center">
+          <div className={`flex items-center gap-2 rounded-full px-3 py-1 border ${mqttSource
+              ? `bg-${t.accent}-500/10 border-${t.accent}-500/20`
+              : 'bg-white/5 border-white/5'
+            } transition-all duration-500`}>
+            <div className={[
+              'w-1 h-1 rounded-full',
+              mqttSource ? 'animate-pulse' : '',
+              mqttSource ? t.ping : 'bg-gray-600'
+            ].join(' ')} />
+            <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${mqttSource ? t.text : 'text-gray-500'}`}>
+              {mqttSource ? 'HiveMQ Cloud Live' : 'Stable'}
+            </span>
+          </div>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+      `}} />
     </div>
   );
 };

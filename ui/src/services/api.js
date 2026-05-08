@@ -98,6 +98,123 @@ export const fetchAllPlantsData = async () => {
   }
 };
 
+// ============================================================
+//  HISTORICAL DATA API (Backend Server at VITE_BACKEND_URL)
+// ============================================================
+
+// Separate client for backend server (Render, Railway, etc.)
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const backendClient = axios.create({
+  baseURL: BACKEND_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+/**
+ * Fetch sensor readings for a date range
+ * @param {string} startDate - ISO 8601 format (e.g., 2024-01-01T00:00:00Z)
+ * @param {string} endDate - ISO 8601 format
+ * @param {number} limit - max records to return (default: 100)
+ * @returns {Promise<Object>} { success, count, data: [...] }
+ */
+export const fetchSensorHistory = async (startDate, endDate, limit = 100) => {
+  try {
+    const response = await backendClient.get('/api/history/sensors', {
+      params: { startDate, endDate, limit }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching sensor history:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch plant images
+ * @param {number} plant - Plant ID (1-6)
+ * @param {number} limit - max records (default: 50)
+ * @returns {Promise<Object>} { success, count, data: [...] }
+ */
+export const fetchPlantImages = async (plant, limit = 50) => {
+  try {
+    const response = await backendClient.get('/api/history/images', {
+      params: { plant, limit }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching images for plant ${plant}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch single plant image with base64 data
+ * @param {string} imageId - Image ID from database
+ * @returns {Promise<Object>} { success, data: { id, plant_id, image_data, timestamp } }
+ */
+export const fetchPlantImage = async (imageId) => {
+  try {
+    const response = await backendClient.get(`/api/history/images/${imageId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching image ${imageId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch detection results for a plant
+ * @param {number} plant - Plant ID (1-6)
+ * @param {number} limit - max records (default: 50)
+ * @returns {Promise<Object>} { success, count, data: [...] }
+ */
+export const fetchDetectionHistory = async (plant, limit = 50) => {
+  try {
+    const response = await backendClient.get('/api/history/detections', {
+      params: { plant, limit }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching detections for plant ${plant}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch detection summary for a plant in date range
+ * @param {number} plant - Plant ID (1-6)
+ * @param {string} startDate - ISO 8601 format
+ * @param {string} endDate - ISO 8601 format
+ * @returns {Promise<Object>} { success, summary: { total_healthy, total_sheath_blight, detection_count, avg_inference_ms } }
+ */
+export const fetchDetectionSummary = async (plant, startDate, endDate) => {
+  try {
+    const response = await backendClient.get(`/api/history/detections/summary/${plant}`, {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching detection summary for plant ${plant}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Check backend health status
+ * @returns {Promise<Object>} { status, mqtt: { connected }, uptime }
+ */
+export const checkBackendHealth = async () => {
+  try {
+    const response = await backendClient.get('/api/health');
+    return response.data;
+  } catch (error) {
+    console.error('Error checking backend health:', error);
+    throw error;
+  }
+};
+
 /**
  * Fetch historical data for a specific plant
  * @param {number} plantId - Plant ID (1-6)

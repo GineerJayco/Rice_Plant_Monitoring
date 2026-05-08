@@ -10,9 +10,17 @@ const Sidebar = ({
   refreshing = false,
   lastUpdated = null,
   activeView = 'dashboard',
-  setActiveView
+  setActiveView,
+  mqttConnected = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update clock every second
+  React.useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <>
@@ -103,22 +111,22 @@ const Sidebar = ({
           {/* Divider */}
           <div className="h-px bg-white/5" />
 
-          {/* Logs */}
+          {/* Data */}
           <div>
             <p className="px-1 text-[9px] font-black uppercase text-emerald-500/50 tracking-[0.2em] mb-1.5">
-              More
+              Storage
             </p>
             <button
               type="button"
-              onClick={() => { setActiveView?.('logs'); setIsOpen(false); }}
+              onClick={() => { setActiveView?.('stored'); setIsOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors ${
-                activeView === 'logs'
+                activeView === 'stored'
                   ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
                   : 'text-gray-400 border border-transparent hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="text-base">🧾</span>
-              <span>Activity Logs</span>
+              <span className="text-base">📁</span>
+              <span>Stored Data</span>
             </button>
           </div>
         </nav>
@@ -127,21 +135,25 @@ const Sidebar = ({
         <div className="px-3 py-3 border-t border-white/5 space-y-2">
           {/* Connection pill */}
           <div className="flex items-center gap-2 bg-gray-800/40 px-3 py-2 rounded-lg border border-white/5">
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${refreshing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
-            <span className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-widest">
-              {refreshing ? 'Syncing…' : 'Live'}
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${mqttConnected ? 'bg-emerald-400 animate-pulse' : refreshing ? 'bg-amber-400 animate-pulse' : 'bg-slate-500'}`} />
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${mqttConnected ? 'text-emerald-300' : 'text-gray-500'}`}>
+              {mqttConnected ? 'HiveMQ Cloud Live' : refreshing ? 'Syncing…' : 'Disconnected'}
             </span>
           </div>
           {/* Active plant info */}
           <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Monitoring</span>
+            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">
+              {mqttConnected ? 'Live Monitoring' : 'Monitoring'}
+            </span>
             <span className="text-[11px] font-black text-emerald-400 uppercase tracking-tight">Plant {selectedPlant}</span>
           </div>
-          {lastUpdated && (
-            <p className="px-1 text-[9px] text-gray-600 opacity-70">
-              Updated: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          )}
+          
+          <p className="px-1 text-[9px] text-gray-600 opacity-70 flex justify-between">
+            <span>{mqttConnected ? 'Live Time:' : 'Updated:'}</span>
+            <span className={mqttConnected ? 'text-emerald-500/80 font-bold' : ''}>
+              {(mqttConnected ? currentTime : (lastUpdated || new Date())).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: mqttConnected ? '2-digit' : undefined })}
+            </span>
+          </p>
         </div>
       </aside>
     </>

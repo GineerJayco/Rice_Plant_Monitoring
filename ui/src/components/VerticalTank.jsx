@@ -26,12 +26,22 @@ const VerticalTank = ({
       <div className={`relative w-8 h-20 rounded-full border border-white/10 ${t.bg} overflow-hidden flex items-end shadow-inner`}>
         <div 
           className={`w-full ${t.fill} transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(0,0,0,0.5)]`} 
-          style={{ height: `${percentage}%` }}
+          style={{ 
+            height: `${percentage}%`,
+            animation: 'vt-fill 1.5s ease-out forwards'
+          }}
         >
           {/* Water Surface reflection */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-white/30 rounded-full" />
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes vt-fill {
+          from { height: 0%; }
+          to { height: ${percentage}%; }
+        }
+      `}} />
       
       {/* Value */}
       <div className="flex items-baseline gap-0.5">

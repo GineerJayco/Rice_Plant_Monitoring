@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import InitialLoader from './components/InitialLoader';
-import Activitylog from './components/Activitylog';
+import StoredData from './components/StoredData';
 import Mqtt from './components/Mqtt';
 import { getCurrentPlantData } from './services/api';
+import useMqttData from './hooks/useMqttData';
 
 /**
  * Main App Component
@@ -21,6 +22,9 @@ function App() {
   const [activityLogs, setActivityLogs] = useState([]);
   const [plantSwapKey, setPlantSwapKey] = useState(0);
   const previousPlantRef = useRef(1);
+
+  // Global MQTT Status for Sidebar & components
+  const { isConnected: mqttConnected } = useMqttData();
 
   const fetchData = async () => {
     setInitialLoading(true);
@@ -88,10 +92,11 @@ function App() {
           lastUpdated={lastUpdated}
           activeView={activeView}
           setActiveView={setActiveView}
+          mqttConnected={mqttConnected}
         />
 
         <div className="flex-1 flex flex-col min-w-0">
-          {activeView === 'dashboard' ? (
+          {activeView === 'dashboard' && (
             <Dashboard
               plantData={activePlantData}
               reservoirData={{ level: appData?.reservoir_level, status: appData?.reservoir_status }}
@@ -102,16 +107,13 @@ function App() {
               plants={appData?.plants ?? []}
               onPlantSelect={setSelectedPlant}
               onActivityLog={appendActivityLog}
+              logs={activityLogs}
             />
-          ) : (
-            <main className="flex-1 h-full overflow-y-auto px-2 py-2 sm:px-4 lg:px-6 custom-scrollbar">
-              <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 backdrop-blur-md">
-                <h2 className="mb-3 text-lg font-black tracking-tight text-white">Activity Logs</h2>
-                <Mqtt onLog={appendActivityLog} compact />
-                <div className="mt-3">
-                <Activitylog logs={activityLogs} />
-                </div>
-              </div>
+          )}
+          
+          {activeView === 'stored' && (
+            <main className="flex-1 h-full overflow-y-auto custom-scrollbar">
+              <StoredData />
             </main>
           )}
         </div>
@@ -121,4 +123,5 @@ function App() {
 }
 
 export default App;
+
 

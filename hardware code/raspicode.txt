@@ -1,0 +1,707 @@
+#!/home/harveypadsece1/Desktop/THESIS/venv/bin/python
+# ============================================================
+#  Rice Plant Monitoring System - Raspberry Pi 4B
+#  Reads sensors from ESP32 via Serial
+#  Captures camera frames via USB webcam (cv2.VideoCapture)
+#  Runs YOLOv8 ONNX disease detection per plant
+#  Sends HEALTH:N:S back to ESP32 after each detection
+#  Publishes everything to browser via MQTT (HiveMQ Cloud)
+#
+#  FLOW PER CYCLE:
+#    For each plant (1-6):
+#      1. Capture image from USB webcam
+#      2. Run YOLOv8 detection
+#      3. Send HEALTH:N:S to ESP32
+#      4. Publish image + detection to MQTT
+#    (No stepper motor â€” camera is fixed, user repositions manually
+#     or all plants are within the camera's field of view)
+#
+#  HEALTH PROTOCOL (Pi -> ESP32):
+#    Pi sends : "HEALTH:N:1\n"  (plant N is Healthy)
+#    Pi sends : "HEALTH:N:0\n"  (plant N has Sheath Blight)
+#
+#  MQTT Topics:
+#    rice/sensors    -> JSON sensor readings from ESP32
+#    rice/image      -> JSON {"plant": N, "image": "<base64 JPEG>"}
+#    rice/detection  -> JSON full per-plant detection results
+# ============================================================
+
+# ============================================================
+#  DEPENDENCY CHECK
+# ============================================================
+
+import sys
+import os
+
+missing = []
+
+try:
+    import cv2
+except ImportError:
+    missing.append("opencv-python-headless")
+
+try:
+    import numpy
+except ImportError:
+    missing.append("numpy")
+
+try:
+    import onnxruntime
+except ImportError:
+    missing.append("onnxruntime")
+
+try:
+    import serial
+except ImportError:
+    missing.append("pyserial")
+
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    missing.append("paho-mqtt")
+
+if missing:
+    print("[ERROR] Missing packages:")
+    for pkg in missing:
+        print("        {}".format(pkg))
+    sys.exit(1)
+
+# ============================================================
+#  IMPORTS
+# ============================================================
+
+import ssl
+import time
+import json
+import base64
+from datetime import datetime
+import cv2
+import numpy as np
+import onnxruntime as ort
+import serial
+import paho.mqtt.client as mqtt
+
+# ============================================================
+#  SETTINGS
+# ============================================================
+
+# --- Model ---
+MODEL_PATH = "/home/harveypadsece1/Desktop/THESIS/best.onnx"
+
+# --- Output folders ---
+RAW_DIR       = "/home/harveypadsece1/Desktop/THESIS/captures/raw"
+PREDICTED_DIR = "/home/harveypadsece1/Desktop/THESIS/captures/predicted"
+
+# --- Plants ---
+NUM_PLANTS = 6
+
+# --- Capture ---
+# Seconds to wait between capturing each plant.
+# Gives time to reposition camera if needed, or just set to 0
+# if all plants are visible in one frame and you want speed.
+CAPTURE_DELAY = 3   # seconds between plant captures
+
+# --- Loop ---
+# Seconds between full detection cycles (all 6 plants).
+LOOP_INTERVAL = 60
+
+# --- Detection ---
+CONF_THRESH = 0.50
+IOU_THRESH  = 0.45
+
+# --- Camera ---
+USB_CAM_INDEX  = 0      # change to 1 or 2 if wrong device (check: ls /dev/video*)
+CAPTURE_WIDTH  = 1000
+CAPTURE_HEIGHT = 1000
+INPUT_SIZE     = 640
+
+# Image sent to browser via MQTT
+SEND_WIDTH   = 640
+SEND_HEIGHT  = 640
+JPEG_QUALITY = 80
+
+# --- Serial (ESP32) ---
+SERIAL_PORT    = "/dev/ttyUSB0"
+SERIAL_BAUD    = 115200
+SERIAL_TIMEOUT = 2
+
+# --- Boot delay ---
+# Both Pi and ESP32 power on together. ESP32 needs ~15s to
+# connect WiFi and sync NTP before it starts sending JSON.
+BOOT_DELAY = 20
+
+# ============================================================
+#  MQTT SETTINGS
+# ============================================================
+
+MQTT_BROKER    = "d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud"
+MQTT_PORT      = 8883
+MQTT_USER      = "thesis_pi"
+MQTT_PASSWORD  = "H@rveypads123"
+MQTT_KEEPALIVE = 60
+
+TOPIC_SENSORS   = "rice/sensors"
+TOPIC_IMAGE     = "rice/image"
+TOPIC_DETECTION = "rice/detection"
+
+# ============================================================
+#  CLASS DEFINITIONS
+# ============================================================
+
+CLASS_NAMES = {
+    0: "Healthy",
+    1: "Sheath Blight"
+}
+
+CLASS_COLORS = {
+    0: (0, 200, 80),   # green  (BGR)
+    1: (0, 60, 220),   # red    (BGR)
+}
+
+# ============================================================
+#  SETUP - create output folders
+# ============================================================
+
+os.makedirs(RAW_DIR,       exist_ok=True)
+os.makedirs(PREDICTED_DIR, exist_ok=True)
+
+# ============================================================
+#  MQTT SETUP
+# ============================================================
+
+def setup_mqtt():
+    print("[MQTT] Connecting to {} ...".format(MQTT_BROKER))
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    except AttributeError:
+        client = mqtt.Client()
+
+    client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+    client.tls_set(tls_version=ssl.PROTOCOL_TLS)
+
+    def on_connect(c, userdata, flags, rc):
+        if rc == 0:
+            print("[MQTT] Connected OK.")
+        else:
+            codes = {1:"Bad protocol", 2:"Bad client ID",
+                     3:"Broker unavailable", 4:"Bad credentials", 5:"Not authorised"}
+            print("[MQTT] Failed. Code {}: {}".format(rc, codes.get(rc, "Unknown")))
+
+    def on_disconnect(c, userdata, rc):
+        if rc != 0:
+            print("[MQTT] Unexpected disconnect. Code: {}".format(rc))
+
+    client.on_connect    = on_connect
+    client.on_disconnect = on_disconnect
+    client.on_publish    = lambda c, u, m: None  # suppress publish noise
+
+    try:
+        client.connect(MQTT_BROKER, MQTT_PORT, MQTT_KEEPALIVE)
+        client.loop_start()
+        time.sleep(2)
+    except Exception as e:
+        print("[MQTT] Could not connect: {}".format(e))
+        sys.exit(1)
+
+    return client
+
+# ============================================================
+#  SERIAL SETUP
+# ============================================================
+
+def setup_serial():
+    print("[SERIAL] Opening {} at {} baud ...".format(SERIAL_PORT, SERIAL_BAUD))
+    for attempt in range(1, 6):
+        try:
+            ser = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=SERIAL_TIMEOUT)
+            time.sleep(2)
+            ser.flushInput()
+            print("[SERIAL] Ready.")
+            return ser
+        except serial.SerialException as e:
+            print("[SERIAL] Attempt {}/5 failed: {}".format(attempt, e))
+            if attempt < 5:
+                time.sleep(5)
+
+    print("[SERIAL] Could not open serial port. Check: ls /dev/ttyUSB*")
+    sys.exit(1)
+
+# ============================================================
+#  LOAD ONNX MODEL
+# ============================================================
+
+def load_model():
+    if not os.path.isfile(MODEL_PATH):
+        print("[MODEL] Not found: {}".format(MODEL_PATH))
+        sys.exit(1)
+
+    print("[MODEL] Loading ...")
+    try:
+        session = ort.InferenceSession(MODEL_PATH,
+                                       providers=["CPUExecutionProvider"])
+        inp = session.get_inputs()[0]
+        out = session.get_outputs()[0]
+        print("[MODEL] Input : {}  shape={}".format(inp.name, inp.shape))
+        print("[MODEL] Output: {}  shape={}".format(out.name, out.shape))
+        print("[MODEL] Loaded OK.")
+        return session
+    except Exception as e:
+        print("[MODEL] Failed: {}".format(e))
+        sys.exit(1)
+
+# ============================================================
+#  CAMERA â€” USB webcam, opened once at startup
+# ============================================================
+
+def setup_camera():
+    print("[CAM] Opening USB webcam (index {}) ...".format(USB_CAM_INDEX))
+    try:
+        cam = cv2.VideoCapture(USB_CAM_INDEX)
+        if not cam.isOpened():
+            print("[CAM] Failed. Check: ls /dev/video*")
+            return None
+
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH,  CAPTURE_WIDTH)
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAPTURE_HEIGHT)
+
+        # Warm up â€” discard first frames so auto-exposure settles
+        print("[CAM] Warming up ...")
+        for _ in range(10):
+            cam.read()
+        time.sleep(1)
+
+        w = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        print("[CAM] Ready â€” {}x{}.".format(w, h))
+        return cam
+    except Exception as e:
+        print("[CAM] Exception: {}".format(e))
+        return None
+
+def capture_frame(cam):
+    if cam is None:
+        print("[CAM] Camera not available.")
+        return None
+    try:
+        ret, frame_bgr = cam.read()
+        if not ret or frame_bgr is None:
+            print("[CAM] cam.read() returned no frame.")
+            return None
+        return frame_bgr   # already BGR, no conversion needed
+    except Exception as e:
+        print("[CAM] Capture failed: {}".format(e))
+        return None
+
+# ============================================================
+#  SEND HEALTH STATUS TO ESP32
+# ============================================================
+
+def send_health(ser, plant_num, is_healthy):
+    cmd = "HEALTH:{}:{}\n".format(plant_num, 1 if is_healthy else 0)
+    try:
+        ser.write(cmd.encode("utf-8"))
+        print("[HEALTH] {} â†’ ESP32".format(cmd.strip()))
+    except Exception as e:
+        print("[HEALTH] Failed: {}".format(e))
+
+# ============================================================
+#  READ SENSOR JSON FROM ESP32
+#  ESP32 sends one JSON line every 10s automatically.
+#  Waits up to SENSOR_WAIT_TIMEOUT seconds for a valid line.
+# ============================================================
+
+SENSOR_WAIT_TIMEOUT = 25   # must be > ESP32 SENSOR_INTERVAL (10s)
+
+def read_sensors(ser):
+    ser.timeout = 1.0
+    ser.reset_input_buffer()
+
+    deadline   = time.time() + SENSOR_WAIT_TIMEOUT
+    line_count = 0
+    print("[SENSOR] Waiting up to {}s ...".format(SENSOR_WAIT_TIMEOUT))
+
+    while time.time() < deadline:
+        try:
+            line = ser.readline().decode("utf-8", errors="ignore").strip()
+            line_count += 1
+
+            if not line:
+                continue
+
+            if not line.startswith("{"):
+                print("[SENSOR] Skip: {}".format(repr(line[:80])))
+                continue
+
+            data = json.loads(line)
+
+            if not any(k in data for k in ("temp", "hum", "depth1", "depth2")):
+                print("[SENSOR] No sensor fields: {}".format(repr(line[:80])))
+                continue
+
+            elapsed = SENSOR_WAIT_TIMEOUT - (deadline - time.time())
+            print("[SENSOR] OK after {:.1f}s â€” temp={} hum={} depth1={} depth2={}".format(
+                elapsed,
+                data.get("temp",   "?"),
+                data.get("hum",    "?"),
+                data.get("depth1", "?"),
+                data.get("depth2", "?")
+            ))
+            return data
+
+        except json.JSONDecodeError:
+            print("[SENSOR] Bad JSON: {}".format(repr(line[:80])))
+
+        except serial.SerialException as e:
+            print("[SENSOR] Serial error: {}".format(e))
+            time.sleep(2)
+
+        except Exception as e:
+            print("[SENSOR] Error: {}".format(e))
+            time.sleep(1)
+
+    print("[SENSOR] No JSON in {}s ({} lines). ESP32 connected?".format(
+        SENSOR_WAIT_TIMEOUT, line_count))
+    return {"error": "no valid JSON in {}s".format(SENSOR_WAIT_TIMEOUT)}
+
+# ============================================================
+#  PRE-PROCESSING â€” letterbox resize
+# ============================================================
+
+def preprocess(image_bgr):
+    h, w   = image_bgr.shape[:2]
+    scale  = min(INPUT_SIZE / w, INPUT_SIZE / h)
+    new_w  = int(w * scale)
+    new_h  = int(h * scale)
+    resized = cv2.resize(image_bgr, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+
+    pad_left = (INPUT_SIZE - new_w) // 2
+    pad_top  = (INPUT_SIZE - new_h) // 2
+
+    canvas = np.full((INPUT_SIZE, INPUT_SIZE, 3), 114, dtype=np.uint8)
+    canvas[pad_top:pad_top + new_h, pad_left:pad_left + new_w] = resized
+
+    blob = canvas[:, :, ::-1].astype(np.float32) / 255.0
+    blob = np.transpose(blob, (2, 0, 1))
+    blob = np.expand_dims(blob, axis=0)
+
+    return blob, scale, pad_left, pad_top
+
+# ============================================================
+#  POST-PROCESSING â€” decode YOLOv8 output + NMS
+# ============================================================
+
+def postprocess(output_tensor, scale, pad_left, pad_top, orig_w, orig_h):
+    output      = output_tensor[0][0].T
+    boxes_xywh  = output[:, :4]
+    scores      = output[:, 4:]
+    class_ids   = np.argmax(scores, axis=1)
+    confidences = scores[np.arange(len(scores)), class_ids]
+
+    mask        = confidences >= CONF_THRESH
+    boxes_xywh  = boxes_xywh[mask]
+    class_ids   = class_ids[mask]
+    confidences = confidences[mask]
+
+    if len(boxes_xywh) == 0:
+        return []
+
+    x1 = np.clip((boxes_xywh[:, 0] - boxes_xywh[:, 2] / 2 - pad_left) / scale, 0, orig_w)
+    y1 = np.clip((boxes_xywh[:, 1] - boxes_xywh[:, 3] / 2 - pad_top)  / scale, 0, orig_h)
+    x2 = np.clip((boxes_xywh[:, 0] + boxes_xywh[:, 2] / 2 - pad_left) / scale, 0, orig_w)
+    y2 = np.clip((boxes_xywh[:, 1] + boxes_xywh[:, 3] / 2 - pad_top)  / scale, 0, orig_h)
+
+    nms_boxes  = np.stack([x1, y1, x2 - x1, y2 - y1], axis=1).tolist()
+    nms_scores = confidences.tolist()
+
+    raw_indices = cv2.dnn.NMSBoxes(nms_boxes, nms_scores, CONF_THRESH, IOU_THRESH)
+
+    if raw_indices is None or len(raw_indices) == 0:
+        indices = []
+    elif isinstance(raw_indices, np.ndarray):
+        indices = raw_indices.flatten().tolist()
+    else:
+        indices = [i[0] if isinstance(i, (list, tuple)) else i for i in raw_indices]
+
+    detections = []
+    for i in indices:
+        cid = int(class_ids[i])
+        detections.append({
+            "class_id"  : cid,
+            "label"     : CLASS_NAMES.get(cid, "class_{}".format(cid)),
+            "confidence": round(float(confidences[i]), 4),
+            "box"       : [int(x1[i]), int(y1[i]), int(x2[i]), int(y2[i])]
+        })
+
+    return detections
+
+# ============================================================
+#  ANNOTATE â€” draw bounding boxes
+# ============================================================
+
+def annotate(image_bgr, detections):
+    annotated = image_bgr.copy()
+    for det in detections:
+        x1, y1, x2, y2 = det["box"]
+        color = CLASS_COLORS.get(det["class_id"], (255, 255, 255))
+        text  = "{}  {:.2f}".format(det["label"], det["confidence"])
+
+        cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
+        (tw, th), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
+        cv2.rectangle(annotated,
+                      (x1, y1 - th - baseline - 4),
+                      (x1 + tw + 4, y1), color, -1)
+        cv2.putText(annotated, text, (x1 + 2, y1 - baseline - 2),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
+    return annotated
+
+# ============================================================
+#  ENCODE IMAGE TO BASE64 JPEG
+# ============================================================
+
+def encode_image(image_bgr):
+    try:
+        resized = cv2.resize(image_bgr, (SEND_WIDTH, SEND_HEIGHT))
+        _, buf  = cv2.imencode(".jpg", resized,
+                               [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
+        return base64.b64encode(buf).decode("utf-8")
+    except Exception as e:
+        print("[IMG] Encode failed: {}".format(e))
+        return ""
+
+# ============================================================
+#  PRINT CYCLE SUMMARY
+# ============================================================
+
+def print_summary(plant_results, sensor_data, timestamp):
+    print("=" * 55)
+    print("  Cycle Summary  {}".format(timestamp))
+    print("=" * 55)
+    print("  [SENSORS]")
+    for k, v in sensor_data.items():
+        if k != "timestamp":
+            print("    {:20s}: {}".format(str(k), v))
+    print("  [DETECTION PER PLANT]")
+    total_h = total_d = 0
+    for p in plant_results:
+        if "error" in p:
+            print("    Plant {} : SKIPPED ({})".format(p["plant"], p["error"]))
+            continue
+        tag = "[!] SHEATH BLIGHT" if p["sheath_blight"] > 0 else "[OK] Healthy"
+        print("    Plant {} : {} healthy  {} sheath blight  {}".format(
+            p["plant"], p["healthy"], p["sheath_blight"], tag))
+        total_h += p["healthy"]
+        total_d += p["sheath_blight"]
+    print("  [TOTALS]  Healthy: {}  Sheath Blight: {}".format(total_h, total_d))
+    print("=" * 55 + "\n")
+
+# ============================================================
+#  ONE FULL DETECTION CYCLE
+#  No motor â€” captures each plant in sequence with CAPTURE_DELAY
+#  seconds between plants so the user can reposition if needed.
+# ============================================================
+
+def run_cycle(session, ser, mqttc, cam):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    print("\n[CYCLE] ========== {} ==========".format(timestamp))
+
+    # â”€â”€ Step 1: Read sensors from ESP32 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    sensor_data = read_sensors(ser)
+    sensor_data["timestamp"] = timestamp
+
+    # Remap to dashboard expected keys
+    dashboard_payload = {
+        "timestamp" : timestamp,
+        "temp"      : sensor_data.get("temp"),
+        "hum"       : sensor_data.get("hum"),
+    }
+
+    # Soil â€” flatten array [0, p1..p6] â†’ soil_1 â€¦ soil_6
+    soil_arr = sensor_data.get("soil_pct", [0, 0, 0, 0, 0, 0, 0])
+    for i in range(1, 7):
+        val = soil_arr[i] if i < len(soil_arr) else 0
+        dashboard_payload["soil_{}".format(i)] = round(float(val), 1)
+
+    # Water â€” depth cm â†’ % of pot depth (15 cm)
+    POT_DEPTH_CM = 15.0
+    depth1 = float(sensor_data.get("depth1", 0))
+    depth2 = float(sensor_data.get("depth2", 0))
+    wh = round(min(100.0, max(0.0, depth1 / POT_DEPTH_CM * 100.0)), 1)
+    wd = round(min(100.0, max(0.0, depth2 / POT_DEPTH_CM * 100.0)), 1)
+    dashboard_payload["water_level_healthy"]  = wh
+    dashboard_payload["water_level_diseased"] = wd
+
+    try:
+        mqttc.publish(TOPIC_SENSORS, json.dumps(dashboard_payload), qos=1)
+        print("[CYCLE] Sensors published â†’ temp={} hum={} wH={}% wD={}%".format(
+            dashboard_payload["temp"], dashboard_payload["hum"], wh, wd))
+    except Exception as e:
+        print("[CYCLE] Sensor publish failed: {}".format(e))
+
+    # â”€â”€ Step 2: Per-plant capture loop (no motor) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    plant_results = []
+
+    for plant_num in range(1, NUM_PLANTS + 1):
+        print("\n[CYCLE] ----- Plant {}/{} -----".format(plant_num, NUM_PLANTS))
+
+        # Wait between plants so user can reposition camera if needed.
+        # Set CAPTURE_DELAY = 0 at the top if not needed.
+        if plant_num > 1 and CAPTURE_DELAY > 0:
+            print("[CYCLE] Waiting {}s before next capture ...".format(CAPTURE_DELAY))
+            time.sleep(CAPTURE_DELAY)
+
+        # 2a. Capture frame
+        frame_bgr = capture_frame(cam)
+
+        if frame_bgr is None:
+            print("[CYCLE] Plant {} â€” capture failed, skipping.".format(plant_num))
+            plant_results.append({
+                "plant"        : plant_num,
+                "error"        : "camera capture failed",
+                "healthy"      : 0,
+                "sheath_blight": 0,
+                "detections"   : []
+            })
+            send_health(ser, plant_num, True)  # default healthy to avoid pump lockout
+            continue
+
+        # 2b. Save raw image
+        raw_path = os.path.join(RAW_DIR,
+                                "plant{}_{}.jpg".format(plant_num, timestamp))
+        try:
+            cv2.imwrite(raw_path, frame_bgr)
+            print("[CYCLE] Raw saved: {}".format(raw_path))
+        except Exception as e:
+            print("[CYCLE] Save raw failed: {}".format(e))
+
+        # 2c. Run ONNX inference
+        try:
+            orig_h, orig_w      = frame_bgr.shape[:2]
+            blob, scale, pl, pt = preprocess(frame_bgr)
+            input_name          = session.get_inputs()[0].name
+            t0                  = time.perf_counter()
+            raw_output          = session.run(None, {input_name: blob})
+            elapsed             = time.perf_counter() - t0
+            print("[CYCLE] Inference: {:.1f} ms".format(elapsed * 1000))
+            detections = postprocess(raw_output, scale, pl, pt, orig_w, orig_h)
+        except Exception as e:
+            print("[CYCLE] Inference failed for plant {}: {}".format(plant_num, e))
+            detections = []
+            elapsed    = 0.0
+
+        # 2d. Annotate and save predicted image
+        annotated = annotate(frame_bgr, detections)
+        pred_path = os.path.join(PREDICTED_DIR,
+                                 "plant{}_{}.jpg".format(plant_num, timestamp))
+        try:
+            cv2.imwrite(pred_path, annotated)
+            print("[CYCLE] Predicted saved: {}".format(pred_path))
+        except Exception as e:
+            print("[CYCLE] Save predicted failed: {}".format(e))
+
+        # 2e. Publish image to MQTT
+        img_b64 = encode_image(annotated)
+        if img_b64:
+            try:
+                mqttc.publish(TOPIC_IMAGE, json.dumps({
+                    "plant": plant_num,
+                    "image": img_b64
+                }), qos=0)
+                print("[CYCLE] Plant {} image published.".format(plant_num))
+            except Exception as e:
+                print("[CYCLE] Image publish failed: {}".format(e))
+
+        # 2f. Count results
+        healthy_count  = sum(1 for d in detections if d["class_id"] == 0)
+        diseased_count = sum(1 for d in detections if d["class_id"] == 1)
+
+        plant_results.append({
+            "plant"        : plant_num,
+            "healthy"      : healthy_count,
+            "sheath_blight": diseased_count,
+            "detections"   : detections,
+            "inference_ms" : round(elapsed * 1000, 1)
+        })
+
+        # 2g. Send health result to ESP32 for pump control
+        is_healthy = (diseased_count == 0)
+        send_health(ser, plant_num, is_healthy)
+
+    # â”€â”€ Step 3: Publish detection summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    detection_payload = {
+        "timestamp"          : timestamp,
+        "plants"             : plant_results,
+        "total_healthy"      : sum(p.get("healthy",       0) for p in plant_results),
+        "total_sheath_blight": sum(p.get("sheath_blight", 0) for p in plant_results)
+    }
+    try:
+        mqttc.publish(TOPIC_DETECTION, json.dumps(detection_payload), qos=1)
+        print("[CYCLE] Detection summary published.")
+    except Exception as e:
+        print("[CYCLE] Detection publish failed: {}".format(e))
+
+    # â”€â”€ Step 4: Print summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    print_summary(plant_results, sensor_data, timestamp)
+
+# ============================================================
+#  MAIN
+# ============================================================
+
+print("=" * 55)
+print("  Rice Plant Monitoring System")
+print("  Starting up ...")
+print("=" * 55)
+
+print("[BOOT] Waiting {}s for ESP32 to finish booting ...".format(BOOT_DELAY))
+time.sleep(BOOT_DELAY)
+print("[BOOT] Done.\n")
+
+session = load_model()
+mqttc   = setup_mqtt()
+ser     = setup_serial()
+cam     = setup_camera()
+
+print("\n[INFO] System ready.")
+print("[INFO] Cycle every {}s  |  Plants: {}  |  Capture delay: {}s".format(
+    LOOP_INTERVAL, NUM_PLANTS, CAPTURE_DELAY))
+print("[INFO] MQTT: {}".format(MQTT_BROKER))
+print("[INFO] Serial: {}".format(SERIAL_PORT))
+print("[INFO] Logs: journalctl -u rice-monitor -f\n")
+
+try:
+    while True:
+        cycle_start = time.time()
+        run_cycle(session, ser, mqttc, cam)
+        elapsed    = time.time() - cycle_start
+        sleep_time = max(0, LOOP_INTERVAL - elapsed)
+        if sleep_time > 0:
+            print("[INFO] Next cycle in {:.0f}s ...\n".format(sleep_time))
+            time.sleep(sleep_time)
+
+except KeyboardInterrupt:
+    print("\n[INFO] Stopped by user.")
+
+except Exception as e:
+    print("\n[ERROR] Unhandled exception: {}".format(e))
+    raise
+
+finally:
+    print("[INFO] Cleaning up ...")
+    try:
+        ser.close()
+        print("[INFO] Serial closed.")
+    except Exception:
+        pass
+    try:
+        mqttc.loop_stop()
+        mqttc.disconnect()
+        print("[INFO] MQTT disconnected.")
+    except Exception:
+        pass
+    try:
+        if cam is not None:
+            cam.release()
+            print("[INFO] Camera released.")
+    except Exception:
+        pass
+    print("[INFO] Done.")
+
