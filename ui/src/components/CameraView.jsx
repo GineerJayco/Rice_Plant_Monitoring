@@ -20,10 +20,6 @@ const CameraView = ({
   base64Image = null,
   mqttConnected = false,
   activePlant = 1,
-  plantName = '',
-  plants = [],
-  plantImages = {},
-  onPlantSelect,
   isLoading = false,
   source = 'api',
   timestamp = '',
@@ -128,62 +124,6 @@ const CameraView = ({
           </p>
         </div>
       ) : null}
-
-      <div className="border-t border-white/10 bg-gray-950/70 p-3">
-        <p className="mb-2 text-[8px] uppercase tracking-widest text-slate-400">
-          All plants - click to view
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {Array.from({ length: 6 }, (_, i) => i + 1).map((plantNumber) => {
-            const plantData = plants.find((plant) => plant.active_plant === plantNumber);
-            const mqttThumbImage = plantImages[plantNumber];
-            const isActive = activePlant === plantNumber;
-
-            // When MQTT connected: use MQTT image or show waiting skeleton
-            // When disconnected: use mock image
-            const thumbHasMqttImage = mqttConnected && mqttThumbImage;
-            const thumbIsWaiting = mqttConnected && !mqttThumbImage;
-            const thumbSrc = thumbHasMqttImage
-              ? `data:image/jpeg;base64,${mqttThumbImage}`
-              : (!mqttConnected ? (plantData?.image_url || `/images/plant${plantNumber}.svg`) : null);
-
-            return (
-              <button
-                type="button"
-                key={plantNumber}
-                onClick={() => onPlantSelect?.(plantNumber)}
-                className={`overflow-hidden rounded-lg border text-left transition ${isActive
-                    ? 'border-emerald-400/70'
-                    : 'border-white/10 hover:border-sky-400/60'
-                  }`}
-              >
-                {thumbIsWaiting ? (
-                  <div className="h-20 w-full bg-gray-900/80 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="h-5 w-5 rounded-full border border-emerald-500/20 border-t-emerald-400 animate-spin" />
-                      <span className="text-[7px] text-gray-500">Waiting...</span>
-                    </div>
-                  </div>
-                ) : (
-                  <img
-                    src={thumbSrc}
-                    alt={`Plant ${plantNumber}`}
-                    className="h-20 w-full object-cover bg-gray-950"
-                    onError={(e) => {
-                      e.currentTarget.src = `/images/plant${plantNumber}.svg`;
-                    }}
-                    loading="lazy"
-                  />
-                )}
-                <div className={`px-1.5 py-1 text-center text-[9px] font-semibold ${isActive ? 'text-emerald-300' : 'text-slate-400'
-                  }`}>
-                  Plant {plantNumber}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };
