@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SemiCircleGauge from './SemiCircleGauge';
 import SparklineChart from './SparklineChart';
 import VerticalTank from './VerticalTank';
-import ReservoirVerticalTank from './ReservoirVerticalTank';
+
 import SegmentedBar from './SegmentedBar';
 
 /**
@@ -164,17 +164,13 @@ const SensorView = ({
               <VerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
             </div>
           )}
-          {type === 'reservoir' && (
-            <div className="transform transition-transform duration-700 group-hover:scale-110">
-              <ReservoirVerticalTank value={displayValue} max={meterMax} unit={unit} tone={tone} size={120} />
-            </div>
-          )}
+
           {type === 'soil' && (
             <div className="transform transition-transform duration-700 group-hover:scale-110">
               <SegmentedBar value={displayValue} max={meterMax} unit={unit} tone={tone} size={110} />
             </div>
           )}
-          {!['temperature', 'humidity', 'water', 'reservoir', 'soil'].includes(type) && (
+          {!['temperature', 'humidity', 'water', 'soil'].includes(type) && (
             <div className="flex flex-col items-center gap-1">
               <div className="flex items-baseline gap-2">
                 <span className={`text-4xl font-black tracking-tighter ${t.text}`}>

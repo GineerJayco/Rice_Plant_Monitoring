@@ -17,9 +17,6 @@ const plantProfiles = [
  * Generate realistic mock data for all 6 plants at once
  */
 export const mockDataGenerator = () => {
-  const globalWaterLevel = Math.floor(70 + Math.random() * 30); // Global reservoir
-  const isReservoirLow = globalWaterLevel < 20;
-
   const plantsData = plantProfiles.map((profile, index) => {
     const activePlant = index + 1;
     
@@ -37,6 +34,8 @@ export const mockDataGenerator = () => {
       temperature: parseFloat((profile.optimalTemp + tempVariation).toFixed(1)),
       humidity: Math.max(30, Math.min(100, profile.optimalHumidity + humidityVariation)),
       soil_moisture: Math.max(20, Math.min(100, profile.optimalMoisture + moistureVariation)),
+      water_level_healthy: Math.floor(40 + Math.random() * 50),
+      water_level_diseased: Math.floor(30 + Math.random() * 60),
       disease: isHealthy ? 'Negative' : 'Positive',
       disease_type: isHealthy ? null : ['Powdery Mildew', 'Leaf Spot', 'Root Rot', 'Blight'][Math.floor(Math.random() * 4)],
       image_url: `/images/plant${activePlant}.svg`,
@@ -47,8 +46,6 @@ export const mockDataGenerator = () => {
   });
 
   return {
-    reservoir_level: globalWaterLevel,
-    reservoir_status: isReservoirLow ? 'LOW' : 'HIGH',
     plants: plantsData
   };
 };
