@@ -244,4 +244,53 @@ export const checkApiHealth = async () => {
   }
 };
 
+/**
+ * Delete a single snapshot
+ * @param {string} id - Image ID
+ * @param {string} timestamp - Timestamp of the snapshot
+ */
+export const deleteSnapshot = async (id, timestamp) => {
+  try {
+    const response = await backendClient.delete(`/api/history/snapshots/${id}`, {
+      params: { timestamp }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting snapshot ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Delete multiple snapshots
+ * @param {number} plantId 
+ * @param {string[]} imageIds 
+ * @param {string[]} timestamps 
+ */
+export const deleteSnapshotsBulk = async (plantId, imageIds, timestamps) => {
+  try {
+    const response = await backendClient.delete('/api/history/snapshots/bulk', {
+      data: { plantId, imageIds, timestamps }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting snapshots bulk:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete all snapshots for a plant
+ * @param {number} plantId 
+ */
+export const deleteAllSnapshots = async (plantId) => {
+  try {
+    const response = await backendClient.delete(`/api/history/snapshots/all/${plantId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting all snapshots for plant ${plantId}:`, error);
+    throw error;
+  }
+};
+
 export default apiClient;

@@ -10,6 +10,9 @@ import {
   getPlantImage,
   getDetectionResults,
   getDetectionSummary,
+  deletePlantSnapshot,
+  deletePlantSnapshots,
+  deleteAllPlantSnapshots,
 } from '../db/supabase.js';
 
 const router = express.Router();
@@ -203,6 +206,60 @@ router.get('/detections/summary/:plant', async (req, res, next) => {
       summary: data,
     });
 
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/history/snapshots/:id
+ * Delete a single snapshot (image + detection)
+ */
+router.delete('/snapshots/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { timestamp } = req.query;
+
+    if (!timestamp) {
+      return res.status(400).json({ error: 'Missing required query parameter: timestamp' });
+    }
+
+    await deletePlantSnapshot(id, timestamp);
+    res.json({ success: true, message: 'Snapshot deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/history/snapshots/bulk
+ * Delete multiple snapshots
+ */
+router.delete('/snapshots/bulk', async (req, res, next) => {
+  try {
+    const { plantId, imageIds, timestamps } = req.body;
+
+    if (!plantId || !imageIds || !timestamps) {
+      return res.status(400).json({ error: 'Missing required fields: plantId, imageIds, timestamps' });
+    }
+
+    await deletePlantSnapshots(plantId, imageIds, timestamps);
+    res.json({ success: true, message: `${imageIds.length} snapshots deleted successfully` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/history/snapshots/all/:plantId
+ * Delete all snapshots for a plant
+ */
+router.delete('/snapshots/all/:plantId', async (req, res, next) => {
+  try {
+    const { plantId } = req.params;
+    
+    await deleteAllPlantSnapshots(parseInt(plantId));
+    res.json({ success: true, message: 'All snapshots for plant deleted successfully' });
   } catch (error) {
     next(error);
   }

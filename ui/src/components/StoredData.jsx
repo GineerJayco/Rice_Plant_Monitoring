@@ -5,7 +5,10 @@ import {
   fetchDetectionSummary,
   fetchPlantImages,
   checkBackendHealth,
-  resolveImageUrl
+  resolveImageUrl,
+  deleteSnapshot,
+  deleteSnapshotsBulk,
+  deleteAllSnapshots
 } from '../services/api';
 
 /**
@@ -28,6 +31,9 @@ const StoredData = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   // Fetch backend health on mount
@@ -132,6 +138,84 @@ const StoredData = () => {
     if (feedElement) feedElement.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const toggleSelection = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedSnapshots.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedSnapshots.map(s => s.id)));
+    }
+  };
+
+  const handleDeleteOne = async (id, timestamp) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteSnapshot(id, timestamp);
+      await fetchAllData(true);
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    } catch (err) {
+      setError(`Deletion failed: ${err.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} records?`)) return;
+
+    setIsDeleting(true);
+    try {
+      const selectedSnapshots = snapshots.filter(s => selectedIds.has(s.id));
+      const imageIds = selectedSnapshots.map(s => s.id);
+      const timestamps = selectedSnapshots.map(s => s.timestamp);
+      
+      await deleteSnapshotsBulk(selectedPlant, imageIds, timestamps);
+      await fetchAllData(true);
+      setSelectedIds(new Set());
+    } catch (err) {
+      setError(`Bulk deletion failed: ${err.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!window.confirm(`CRITICAL: This will PERMANENTLY delete ALL records for PLANT ${selectedPlant}. Proceed?`)) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteAllSnapshots(selectedPlant);
+      await fetchAllData(true);
+      setSelectedIds(new Set());
+    } catch (err) {
+      setError(`Vault clearance failed: ${err.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedIds(new Set());
+    }
+  };
+
   if (!backendHealth) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-8 bg-[#030712]">
@@ -222,18 +306,85 @@ const StoredData = () => {
               {/* Refresh Button */}
               <button
                 onClick={() => fetchAllData(true)}
-                disabled={loading || refreshing}
+                disabled={loading || refreshing || isDeleting}
                 className={`w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-black transition-all active:scale-95 disabled:opacity-50 ${refreshing ? 'animate-spin' : ''}`}
+                title="Refresh Vault"
               >
                 ↻
               </button>
+
+              {/* Selection Mode Toggle */}
+              <button
+                onClick={toggleSelectionMode}
+                disabled={loading || refreshing || isDeleting || snapshots.length === 0}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 disabled:opacity-50 ${selectionMode ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                title={selectionMode ? "Exit Delete Mode" : "Enter Delete Mode"}
+              >
+                {selectionMode ? '✕' : '🗑️'}
+              </button>
+
+              {/* Clear All Button (Only in Selection Mode) */}
+              {selectionMode && (
+                <button
+                  onClick={handleClearAll}
+                  disabled={loading || refreshing || isDeleting || snapshots.length === 0}
+                  className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-95 disabled:opacity-50 animate-in zoom-in-50"
+                  title="Clear All Plant Records"
+                >
+                  <span className="text-[10px] font-black">ALL</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Selection Toolbar (Conditional) */}
+      {selectedIds.size > 0 && (
+        <div className="mx-6 mt-4 p-4 bg-emerald-500 rounded-2xl flex items-center justify-between animate-in slide-in-from-top-4 duration-500 shadow-xl shadow-emerald-500/20">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-emerald-500 font-black text-xs">
+              {selectedIds.size}
+            </div>
+            <p className="text-black font-black uppercase tracking-widest text-[10px]">Records Selected for Disposal</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setSelectedIds(new Set())}
+              className="px-4 py-2 bg-black/10 hover:bg-black/20 text-black text-[10px] font-black uppercase rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleDeleteSelected}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-black text-white hover:bg-gray-900 text-[10px] font-black uppercase rounded-lg transition-all flex items-center gap-2"
+            >
+              {isDeleting ? 'Processing...' : 'Delete Selected'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Unified Feed Area */}
       <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar vault-feed bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent">
+        {/* Bulk Action Header */}
+        {selectionMode && paginatedSnapshots.length > 0 && (
+          <div className="max-w-7xl mx-auto mb-6 flex items-center justify-between px-2 animate-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={toggleSelectAll}
+                className="flex items-center gap-2 group"
+              >
+                <div className={`w-5 h-5 rounded-md border transition-all flex items-center justify-center ${selectedIds.size === paginatedSnapshots.length ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 group-hover:border-emerald-500'}`}>
+                  {selectedIds.size === paginatedSnapshots.length && <span className="text-black text-[10px] font-black">✓</span>}
+                </div>
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">Select Page ({paginatedSnapshots.length})</span>
+              </button>
+            </div>
+            <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em]">Delete Mode Active</p>
+          </div>
+        )}
         {error && (
           <div className="mb-8 p-5 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 animate-in fade-in slide-in-from-top-4">
             <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 font-black italic">!</div>
@@ -267,9 +418,24 @@ const StoredData = () => {
                       <div className="flex flex-col lg:row gap-6">
                         {/* Timestamp & Marker */}
                         <div className="lg:w-40 flex-shrink-0 flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-gray-900 border border-white/10 flex items-center justify-center flex-shrink-0 relative z-10 group-hover:border-emerald-500 group-hover:bg-emerald-500/10 transition-all duration-500">
-                            <span className="text-[9px] font-black text-emerald-500">{absoluteIdx + 1}</span>
-                          </div>
+                          {selectionMode ? (
+                            <button 
+                              onClick={() => toggleSelection(snap.id)}
+                              className="w-8 h-8 rounded-xl bg-gray-900 border border-white/10 flex items-center justify-center flex-shrink-0 relative z-10 hover:border-emerald-500 transition-all duration-500 overflow-hidden animate-in zoom-in-50"
+                            >
+                              {selectedIds.has(snap.id) ? (
+                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center">
+                                  <span className="text-black text-xs font-black">✓</span>
+                                </div>
+                              ) : (
+                                <div className="w-2 h-2 rounded-full border border-white/30"></div>
+                              )}
+                            </button>
+                          ) : (
+                            <div className="w-8 h-8 rounded-xl bg-gray-900 border border-white/5 flex items-center justify-center flex-shrink-0 relative z-10">
+                              <span className="text-[9px] font-black text-gray-600">{absoluteIdx + 1}</span>
+                            </div>
+                          )}
                           <div>
                             <p className="text-[11px] text-white font-black leading-none">{new Date(snap.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             <p className="text-[8px] text-gray-500 font-bold mt-1 tracking-tight">{new Date(snap.timestamp).toLocaleDateString()}</p>
@@ -277,7 +443,7 @@ const StoredData = () => {
                         </div>
 
                         {/* Snapshot Card (Bento Layout) */}
-                        <div className="flex-1 bg-gray-900/40 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-emerald-500/30 transition-all duration-700 hover:shadow-2xl hover:shadow-emerald-500/5 group/card">
+                        <div className={`flex-1 bg-gray-900/40 backdrop-blur-xl border rounded-3xl overflow-hidden hover:border-emerald-500/30 transition-all duration-700 hover:shadow-2xl hover:shadow-emerald-500/5 group/card ${selectedIds.has(snap.id) ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/5'}`}>
                           <div className="flex flex-col xl:flex-row">
                             {/* Image Column */}
                             <div className="xl:w-1/3 aspect-video xl:aspect-auto relative overflow-hidden bg-gray-800">
@@ -372,9 +538,21 @@ const StoredData = () => {
                                     <p className="text-[7px] font-black text-gray-500 uppercase mb-0.5 tracking-widest">Inference</p>
                                     <p className="text-[10px] font-black text-white">{snap.detection?.inference_ms ? `${snap.detection.inference_ms}ms` : '---'}</p>
                                   </div>
-                                  <button className="w-10 h-10 rounded-2xl bg-emerald-500 text-black flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 group/btn">
-                                    <span className="text-base group-hover/btn:scale-125 transition-transform">➔</span>
-                                  </button>
+                                  <div className="flex gap-2">
+                                    {selectionMode && (
+                                      <button 
+                                        onClick={() => handleDeleteOne(snap.id, snap.timestamp)}
+                                        disabled={isDeleting}
+                                        className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 text-gray-500 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30 transition-all active:scale-95 animate-in slide-in-from-right-4"
+                                        title="Delete Record"
+                                      >
+                                        <span className="text-xs">🗑️</span>
+                                      </button>
+                                    )}
+                                    <button className="w-10 h-10 rounded-2xl bg-emerald-500 text-black flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 group/btn">
+                                      <span className="text-base group-hover/btn:scale-125 transition-transform">➔</span>
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
