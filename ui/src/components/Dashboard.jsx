@@ -72,10 +72,10 @@ const Dashboard = ({
     : (plantData?.soil_moisture ?? '—');
   const displayWaterGroup1 = mqttIsConnected
     ? (hasMqttSensors ? (mqttSensors.water_level_healthy ?? '—') : '—')
-    : '—';
+    : (plantData?.water_level_healthy ?? '—');
   const displayWaterGroup2 = mqttIsConnected
     ? (hasMqttSensors ? (mqttSensors.water_level_diseased ?? '—') : '—')
-    : '—';
+    : (plantData?.water_level_diseased ?? '—');
 
   // Detection data for the active plant
   const activeDetection = mqttIsConnected
