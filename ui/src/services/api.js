@@ -293,4 +293,32 @@ export const deleteAllSnapshots = async (plantId) => {
   }
 };
 
+/**
+ * Delete a specific sensor reading
+ */
+export const deleteSensorHistory = async (timestamp) => {
+  try {
+    const response = await backendClient.delete('/api/history/sensors', {
+      params: { timestamp }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting sensor reading:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete all sensor history
+ */
+export const deleteAllSensorHistory = async () => {
+  try {
+    const response = await backendClient.delete('/api/history/sensors/all');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting all sensor history:', error);
+    throw error;
+  }
+};
+
 export default apiClient;
