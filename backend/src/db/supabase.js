@@ -247,4 +247,92 @@ export const getDetectionSummary = async (plantId, startDate, endDate) => {
   }
 };
 
+/**
+ * Delete a single plant snapshot (image and associated detection)
+ */
+export const deletePlantSnapshot = async (imageId, timestamp) => {
+  try {
+    // Delete image
+    const imagePromise = client
+      .from('plant_images')
+      .delete()
+      .eq('id', imageId);
+
+    // Delete detection (matching timestamp)
+    const detectionPromise = client
+      .from('plant_detections')
+      .delete()
+      .eq('timestamp', timestamp);
+
+    const [imgRes, detRes] = await Promise.all([imagePromise, detectionPromise]);
+
+    if (imgRes.error) throw imgRes.error;
+    if (detRes.error) throw detRes.error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('[DB] Error deleting snapshot:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Delete multiple snapshots for a plant
+ */
+export const deletePlantSnapshots = async (plantId, imageIds, timestamps) => {
+  try {
+    // Delete images
+    const imagePromise = client
+      .from('plant_images')
+      .delete()
+      .in('id', imageIds);
+
+    // Delete detections
+    const detectionPromise = client
+      .from('plant_detections')
+      .delete()
+      .eq('plant_id', plantId)
+      .in('timestamp', timestamps);
+
+    const [imgRes, detRes] = await Promise.all([imagePromise, detectionPromise]);
+
+    if (imgRes.error) throw imgRes.error;
+    if (detRes.error) throw detRes.error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('[DB] Error deleting multiple snapshots:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Delete all snapshots for a plant
+ */
+export const deleteAllPlantSnapshots = async (plantId) => {
+  try {
+    // Delete images
+    const imagePromise = client
+      .from('plant_images')
+      .delete()
+      .eq('plant_id', plantId);
+
+    // Delete detections
+    const detectionPromise = client
+      .from('plant_detections')
+      .delete()
+      .eq('plant_id', plantId);
+
+    const [imgRes, detRes] = await Promise.all([imagePromise, detectionPromise]);
+
+    if (imgRes.error) throw imgRes.error;
+    if (detRes.error) throw detRes.error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('[DB] Error deleting all snapshots:', error.message);
+    throw error;
+  }
+};
+
 export default client;
