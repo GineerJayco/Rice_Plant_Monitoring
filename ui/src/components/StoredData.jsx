@@ -321,6 +321,18 @@ const StoredData = () => {
               >
                 {selectionMode ? '✕' : '🗑️'}
               </button>
+
+              {/* Clear All Button (Restored) */}
+              {selectionMode && (
+                <button
+                  onClick={handleClearAll}
+                  disabled={loading || refreshing || isDeleting || snapshots.length === 0}
+                  className="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+                  title="Clear All Plant Records"
+                >
+                  <span className="text-[9px] font-black">ALL</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -355,6 +367,21 @@ const StoredData = () => {
 
       {/* Unified Feed Area */}
       <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar vault-feed bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent">
+        {/* Restored Bulk Select Header */}
+        {selectionMode && paginatedSnapshots.length > 0 && (
+          <div className="max-w-6xl mx-auto mb-6 flex items-center justify-between px-1 animate-in slide-in-from-top-2">
+            <button 
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 group"
+            >
+              <div className={`w-4 h-4 rounded-md border transition-all flex items-center justify-center ${selectedIds.size === paginatedSnapshots.length ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 group-hover:border-emerald-500'}`}>
+                {selectedIds.size === paginatedSnapshots.length && <span className="text-black text-[10px] font-black">✓</span>}
+              </div>
+              <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">Select Page ({paginatedSnapshots.length})</span>
+            </button>
+            <p className="text-[7px] font-black text-red-500/50 uppercase tracking-[0.3em]">Delete Mode Active</p>
+          </div>
+        )}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
             <div className="w-12 h-12 border-2 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin"></div>
