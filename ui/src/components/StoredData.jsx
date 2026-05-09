@@ -109,13 +109,13 @@ const StoredData = () => {
         id: img.id,
         timestamp: img.timestamp,
         // Fallback for image_url if backend only provides ID
-        image_url: img.image_url || null,
+        image_data: img.image_data || null,
         plant_id: img.plant_id,
         sensors: closestSensor || null,
         detection: closestDetection || null,
       };
     });
-  }, [rawImages, rawSensors, rawDetections]);
+  }, [rawImages, rawSensors, rawDetections, selectedPlant]);
 
   // Helper to get specific plant soil moisture safely
   const getPlantSoil = (sensors) => {
@@ -447,15 +447,11 @@ const StoredData = () => {
                           <div className="flex flex-col xl:flex-row">
                             {/* Image Column */}
                             <div className="xl:w-1/3 aspect-video xl:aspect-auto relative overflow-hidden bg-gray-800">
-                              {snap.image_url ? (
+                              {snap.image_data ? (
                                 <img
-                                  src={resolveImageUrl(snap.image_url)}
+                                  src={snap.image_data.startsWith('data:') ? snap.image_data : `data:image/jpeg;base64,${snap.image_data}`}
                                   alt="Archive Capture"
                                   className="w-full h-full object-cover grayscale opacity-50 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all duration-1000 scale-110 group-hover/card:scale-100"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=800";
-                                  }}
                                 />
                               ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gray-900/50">
@@ -467,14 +463,23 @@ const StoredData = () => {
 
                               {/* Recognition Overlay */}
                               {snap.detection && (
-                                <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-                                  <div className="flex-1 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 p-2 text-center">
-                                    <p className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">Healthy</p>
-                                    <p className="text-lg font-black text-white leading-none">{snap.detection.healthy_count || 0}</p>
+                                <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
+                                  <div className={`px-3 py-1 rounded-full font-black text-[8px] backdrop-blur-md border ${
+                                    (snap.detection.sheath_blight_count || 0) > 0 
+                                      ? 'bg-red-500/20 border-red-500/50 text-red-400' 
+                                      : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                                  }`}>
+                                    {(snap.detection.sheath_blight_count || 0) > 0 ? '⚠️ POSITIVE' : '✓ NEGATIVE'}
                                   </div>
-                                  <div className="flex-1 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 p-2 text-center">
-                                    <p className="text-[7px] font-black text-red-500 uppercase tracking-widest">Blight</p>
-                                    <p className="text-lg font-black text-white leading-none">{snap.detection.sheath_blight_count || 0}</p>
+                                  <div className="flex gap-1.5">
+                                    <div className="bg-black/40 backdrop-blur-md rounded-lg border border-white/10 px-2 py-0.5 text-center">
+                                      <p className="text-[6px] font-black text-emerald-500 uppercase">H</p>
+                                      <p className="text-[10px] font-black text-white leading-none">{snap.detection.healthy_count || 0}</p>
+                                    </div>
+                                    <div className="bg-black/40 backdrop-blur-md rounded-lg border border-white/10 px-2 py-0.5 text-center">
+                                      <p className="text-[6px] font-black text-red-500 uppercase">B</p>
+                                      <p className="text-[10px] font-black text-white leading-none">{snap.detection.sheath_blight_count || 0}</p>
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -496,22 +501,23 @@ const StoredData = () => {
                               </div>
 
                               {/* Row 2: Sensor Bento */}
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {[
-                                  { label: 'Ambient Temp', value: snap.sensors?.temp ? `${snap.sensors.temp}°C` : '--', color: 'text-amber-500', icon: '🌡️' },
-                                  { label: 'Air Humidity', value: snap.sensors?.humidity ? `${snap.sensors.humidity}%` : '--', color: 'text-sky-500', icon: '💧' },
-                                  { label: 'Soil Health', value: snap.sensors ? `${getPlantSoil(snap.sensors)}%` : '--', color: 'text-emerald-500', icon: '🪴' },
-                                  { label: 'Res. Status', value: snap.sensors ? 'OPTIMAL' : 'OFFLINE', color: snap.sensors ? 'text-blue-500' : 'text-gray-600', icon: '🔋' },
-                                ].map((stat, i) => (
-                                  <div key={i} className="p-3.5 rounded-2xl bg-white/5 border border-white/5 group/stat hover:bg-white/10 transition-all">
-                                    <p className="text-[6.5px] font-black text-gray-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <div className="flex items-baseline gap-1.5">
-                                      <span className="text-[9px]">{stat.icon}</span>
-                                      <span className={`text-xs font-black ${stat.color} tracking-tighter group-hover/stat:scale-105 transition-transform origin-left`}>{stat.value}</span>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                  {[
+                                    { label: 'Ambient Temp', value: snap.sensors?.temp ? `${snap.sensors.temp}°C` : '--', color: 'text-amber-500', icon: '🌡️' },
+                                    { label: 'Air Humidity', value: snap.sensors?.humidity ? `${snap.sensors.humidity}%` : '--', color: 'text-sky-500', icon: '💧' },
+                                    { label: 'Soil Moisture', value: snap.sensors ? `${getPlantSoil(snap.sensors)}%` : '--', color: 'text-emerald-500', icon: '🪴' },
+                                    { label: 'Water (1-3)', value: snap.sensors?.water_level_healthy ? `${snap.sensors.water_level_healthy}%` : '--', color: 'text-violet-500', icon: '🚰' },
+                                    { label: 'Water (4-6)', value: snap.sensors?.water_level_diseased ? `${snap.sensors.water_level_diseased}%` : '--', color: 'text-sky-500', icon: '🚰' },
+                                  ].map((stat, i) => (
+                                    <div key={i} className="p-3 rounded-2xl bg-white/5 border border-white/5 group/stat hover:bg-white/10 transition-all">
+                                      <p className="text-[6.5px] font-black text-gray-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                                      <div className="flex items-baseline gap-1.5">
+                                        <span className="text-[9px]">{stat.icon}</span>
+                                        <span className={`text-xs font-black ${stat.color} tracking-tighter group-hover/stat:scale-105 transition-transform origin-left`}>{stat.value}</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
+                                  ))}
+                                </div>
 
                               {/* Row 3: Soil Array & Analysis */}
                               <div className="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-5 pt-5 border-t border-white/5">

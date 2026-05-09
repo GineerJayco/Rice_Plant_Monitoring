@@ -110,10 +110,10 @@ export const storeDetectionResult = async (plantId, detectionData, timestamp = n
       .from('plant_detections')
       .insert([{
         plant_id: plantId,
-        healthy_count: detectionData.healthy,
-        sheath_blight_count: detectionData.sheath_blight,
+        healthy_count: Math.round(detectionData.healthy || 0),
+        sheath_blight_count: Math.round(detectionData.sheath_blight || 0),
         detection_data: detectionData.detections || [],
-        inference_ms: detectionData.inference_ms,
+        inference_ms: Math.round(detectionData.inference_ms || 0),
         error_message: detectionData.error || null,
         timestamp: timestamp || new Date().toISOString(),
       }]);
@@ -155,7 +155,7 @@ export const getPlantImages = async (plantId, limit = 50) => {
   try {
     const { data, error } = await client
       .from('plant_images')
-      .select('id, plant_id, timestamp')
+      .select('id, plant_id, image_data, timestamp')
       .eq('plant_id', plantId)
       .order('timestamp', { ascending: false })
       .limit(limit);
