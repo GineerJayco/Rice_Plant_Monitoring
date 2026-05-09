@@ -258,16 +258,17 @@ export const deletePlantSnapshot = async (imageId, timestamp) => {
       .delete()
       .eq('id', imageId);
 
-    // Delete detection (matching timestamp)
-    const detectionPromise = client
-      .from('plant_detections')
+    // Delete sensor reading (matching timestamp)
+    const sensorPromise = client
+      .from('sensor_readings')
       .delete()
       .eq('timestamp', timestamp);
 
-    const [imgRes, detRes] = await Promise.all([imagePromise, detectionPromise]);
+    const [imgRes, detRes, sensRes] = await Promise.all([imagePromise, detectionPromise, sensorPromise]);
 
     if (imgRes.error) throw imgRes.error;
     if (detRes.error) throw detRes.error;
+    if (sensRes.error) throw sensRes.error;
 
     return { success: true };
   } catch (error) {
@@ -294,10 +295,17 @@ export const deletePlantSnapshots = async (plantId, imageIds, timestamps) => {
       .eq('plant_id', plantId)
       .in('timestamp', timestamps);
 
-    const [imgRes, detRes] = await Promise.all([imagePromise, detectionPromise]);
+    // Delete sensor readings
+    const sensorPromise = client
+      .from('sensor_readings')
+      .delete()
+      .in('timestamp', timestamps);
+
+    const [imgRes, detRes, sensRes] = await Promise.all([imagePromise, detectionPromise, sensorPromise]);
 
     if (imgRes.error) throw imgRes.error;
     if (detRes.error) throw detRes.error;
+    if (sensRes.error) throw sensRes.error;
 
     return { success: true };
   } catch (error) {
@@ -331,6 +339,42 @@ export const deleteAllPlantSnapshots = async (plantId) => {
     return { success: true };
   } catch (error) {
     console.error('[DB] Error deleting all snapshots:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Delete a specific sensor reading by timestamp
+ */
+export const deleteSensorReading = async (timestamp) => {
+  try {
+    const { error } = await client
+      .from('sensor_readings')
+      .delete()
+      .eq('timestamp', timestamp);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[DB] Error deleting sensor reading:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Delete all sensor readings
+ */
+export const deleteAllSensorReadings = async () => {
+  try {
+    const { error } = await client
+      .from('sensor_readings')
+      .delete()
+      .neq('timestamp', '1970-01-01T00:00:00Z'); // Delete all records
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[DB] Error deleting all sensor readings:', error.message);
     throw error;
   }
 };

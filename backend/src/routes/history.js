@@ -13,6 +13,8 @@ import {
   deletePlantSnapshot,
   deletePlantSnapshots,
   deleteAllPlantSnapshots,
+  deleteSensorReading,
+  deleteAllSensorReadings,
 } from '../db/supabase.js';
 
 const router = express.Router();
@@ -260,6 +262,34 @@ router.delete('/snapshots/all/:plantId', async (req, res, next) => {
     
     await deleteAllPlantSnapshots(parseInt(plantId));
     res.json({ success: true, message: 'All snapshots for plant deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/history/sensors/all
+ * Delete all sensor readings (affects charts)
+ */
+router.delete('/sensors/all', async (req, res, next) => {
+  try {
+    await deleteAllSensorReadings();
+    res.json({ success: true, message: 'All sensor history deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/history/sensors
+ * Delete specific sensor reading
+ */
+router.delete('/sensors', async (req, res, next) => {
+  try {
+    const { timestamp } = req.query;
+    if (!timestamp) return res.status(400).json({ error: 'Timestamp required' });
+    await deleteSensorReading(timestamp);
+    res.json({ success: true, message: 'Sensor reading deleted' });
   } catch (error) {
     next(error);
   }

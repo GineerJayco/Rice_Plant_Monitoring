@@ -8,7 +8,8 @@ import {
   resolveImageUrl,
   deleteSnapshot,
   deleteSnapshotsBulk,
-  deleteAllSnapshots
+  deleteAllSnapshots,
+  deleteAllSensorHistory
 } from '../services/api';
 
 /**
@@ -200,6 +201,12 @@ const StoredData = () => {
     setIsDeleting(true);
     try {
       await deleteAllSnapshots(selectedPlant);
+      
+      // Optional: Clear sensor history too if user confirms
+      if (window.confirm("Vault records cleared. Would you also like to CLEAR ALL SENSOR HISTORY? (This will empty the charts for ALL plants)")) {
+        await deleteAllSensorHistory();
+      }
+
       await fetchAllData(true);
       setSelectedIds(new Set());
     } catch (err) {
