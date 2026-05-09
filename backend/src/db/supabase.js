@@ -151,7 +151,7 @@ export const getSensorReadings = async (startDate, endDate, limit = 100) => {
 /**
  * Query plant images
  */
-export const getPlantImages = async (plantId, limit = 50) => {
+export const getPlantImages = async (plantId, limit = 20) => {
   try {
     const { data, error } = await client
       .from('plant_images')

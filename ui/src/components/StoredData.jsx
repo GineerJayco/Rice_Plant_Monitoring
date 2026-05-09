@@ -58,7 +58,7 @@ const StoredData = () => {
       const [sensorsRes, detectionsRes, imagesRes, summaryRes] = await Promise.all([
         fetchSensorHistory(startDate, endDate, 100),
         fetchDetectionHistory(selectedPlant, 100),
-        fetchPlantImages(selectedPlant, 100),
+        fetchPlantImages(selectedPlant, 50),
         fetchDetectionSummary(selectedPlant, startDate, endDate),
       ]);
 
@@ -68,7 +68,7 @@ const StoredData = () => {
       setDetectionSummary(summaryRes.summary || null);
 
     } catch (err) {
-      setError(`Vault synchronization failed: ${err.message}`);
+      setError(`Data synchronization failed: ${err.message}`);
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
@@ -203,14 +203,14 @@ const StoredData = () => {
       await deleteAllSnapshots(selectedPlant);
       
       // Optional: Clear sensor history too if user confirms
-      if (window.confirm("Vault records cleared. Would you also like to CLEAR ALL SENSOR HISTORY? (This will empty the charts for ALL plants)")) {
+      if (window.confirm("Stored records cleared. Would you also like to CLEAR ALL SENSOR HISTORY? (This will empty the charts for ALL plants)")) {
         await deleteAllSensorHistory();
       }
 
       await fetchAllData(true);
       setSelectedIds(new Set());
     } catch (err) {
-      setError(`Vault clearance failed: ${err.message}`);
+      setError(`Data clearance failed: ${err.message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -242,14 +242,14 @@ const StoredData = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <span className="text-black font-black text-base">V</span>
+              <span className="text-black font-black text-base">S</span>
             </div>
             <div>
               <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">
-                Archive <span className="text-emerald-500">Vault</span>
+                Stored <span className="text-emerald-500">Data</span>
               </h1>
               <p className="text-gray-500 text-[8px] font-black tracking-[0.2em] uppercase mt-0.5">
-                Historical Intelligence & Multi-Sensor Snapshots
+                Sensor Data and Image Captured
               </p>
             </div>
           </div>
@@ -385,7 +385,7 @@ const StoredData = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
             <div className="w-12 h-12 border-2 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin"></div>
-            <p className="text-emerald-500 text-[9px] font-black uppercase tracking-[0.3em] animate-pulse">Syncing Archive...</p>
+            <p className="text-emerald-500 text-[9px] font-black uppercase tracking-[0.3em] animate-pulse">Syncing Data...</p>
           </div>
         ) : (
           <div className="space-y-6 max-w-6xl mx-auto pb-24">
@@ -577,9 +577,9 @@ const StoredData = () => {
             ) : (
               <div className="flex flex-col items-center justify-center py-48 text-center bg-gray-900/20 rounded-[2rem] border border-dashed border-white/5">
                 <div className="text-5xl mb-6 opacity-20 grayscale">🗄️</div>
-                <h3 className="text-xl font-black text-gray-400 uppercase tracking-[0.2em]">Vault Empty</h3>
+                <h3 className="text-xl font-black text-gray-400 uppercase tracking-[0.2em]">No Data Stored</h3>
                 <p className="text-gray-600 text-[8px] mt-2 font-bold uppercase tracking-widest max-w-xs">
-                  No historical intelligence packets found for PLANT {selectedPlant}.
+                  No historical sensor data or images found for PLANT {selectedPlant}.
                 </p>
               </div>
             )}
