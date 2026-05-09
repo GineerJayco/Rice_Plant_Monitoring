@@ -19,7 +19,6 @@ import PlantStrip from './6button';
  */
 const Dashboard = ({
   plantData,
-  reservoirData,
   source,
   refreshing,
   error,
@@ -71,12 +70,12 @@ const Dashboard = ({
   const displaySoil = mqttIsConnected
     ? (hasMqttSensors ? (mqttSensors[`soil_${activePlant}`] ?? '—') : '—')
     : (plantData?.soil_moisture ?? '—');
-  const displayWaterHealthy = mqttIsConnected
+  const displayWaterGroup1 = mqttIsConnected
     ? (hasMqttSensors ? (mqttSensors.water_level_healthy ?? '—') : '—')
-    : (reservoirData?.level ?? '—');
-  const displayWaterDiseased = mqttIsConnected
+    : '—';
+  const displayWaterGroup2 = mqttIsConnected
     ? (hasMqttSensors ? (mqttSensors.water_level_diseased ?? '—') : '—')
-    : (reservoirData?.status ?? '—');
+    : '—';
 
   // Detection data for the active plant
   const activeDetection = mqttIsConnected
@@ -287,8 +286,8 @@ const Dashboard = ({
                   />
                   <EspReadings
                     key={`waterh-${plantSwapKey}`}
-                    title="Water Level (Healthy)"
-                    value={displayWaterHealthy}
+                    title="Water Level (Plant 1–3)"
+                    value={displayWaterGroup1}
                     unit="%"
                     icon="🚰"
                     tone="violet"
@@ -298,8 +297,8 @@ const Dashboard = ({
                   />
                   <EspReadings
                     key={`waterd-${plantSwapKey}`}
-                    title="Water Level (Diseased)"
-                    value={displayWaterDiseased}
+                    title="Water Level (Plant 4–6)"
+                    value={displayWaterGroup2}
                     unit="%"
                     icon="🚰"
                     tone="sky"

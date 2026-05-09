@@ -99,7 +99,6 @@ function App() {
           {activeView === 'dashboard' && (
             <Dashboard
               plantData={activePlantData}
-              reservoirData={{ level: appData?.reservoir_level, status: appData?.reservoir_status }}
               source={source}
               refreshing={false}
               error={error}

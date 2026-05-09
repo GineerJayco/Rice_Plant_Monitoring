@@ -17,9 +17,6 @@ const plantProfiles = [
  * Generate realistic mock data for all 6 plants at once
  */
 export const mockDataGenerator = () => {
-  const globalWaterLevel = Math.floor(70 + Math.random() * 30); // Global reservoir
-  const isReservoirLow = globalWaterLevel < 20;
-
   const plantsData = plantProfiles.map((profile, index) => {
     const activePlant = index + 1;
     
@@ -47,8 +44,6 @@ export const mockDataGenerator = () => {
   });
 
   return {
-    reservoir_level: globalWaterLevel,
-    reservoir_status: isReservoirLow ? 'LOW' : 'HIGH',
     plants: plantsData
   };
 };
