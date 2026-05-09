@@ -90,7 +90,7 @@ router.get('/images', async (req, res, next) => {
       });
     }
 
-    const data = await getPlantImages(plantId, Math.min(parseInt(limit) || 50, 500));
+    const data = await getPlantImages(plantId, Math.min(parseInt(limit) || 20, 50));
 
     res.json({
       success: true,

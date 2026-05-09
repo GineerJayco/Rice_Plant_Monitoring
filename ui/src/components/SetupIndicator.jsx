@@ -21,7 +21,7 @@ const SetupIndicator = ({ activePlant = 1 }) => {
           <div key={setupId} className="flex items-center gap-2">
             <span
               className={[
-                'h-2.5 w-2.5 rounded-full border transition-all duration-300',
+                'h-1.5 w-1.5 rounded-full border transition-all duration-300',
                 activePlant === setupId
                   ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_18px_rgba(16,185,129,0.55)] scale-110'
                   : 'bg-white/10 border-white/10',

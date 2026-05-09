@@ -63,7 +63,7 @@ const PlantStrip = ({
             {/* Disease status dot */}
             {(p || mqttDet) && !thumbIsWaiting && (
               <span
-                className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${
+                className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${
                   isDisease ? 'bg-red-400' : 'bg-emerald-400'
                 }`}
               />
