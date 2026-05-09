@@ -167,14 +167,15 @@ const HistoricalCharts = ({ activePlant }) => {
                 data={scatterData}
                 fill="#10b981"
                 fillOpacity={0.85}
-                r={4}
+                r={0.8}
+                strokeWidth={0}
               />
 
               {trendPoints.length > 0 && (
                 <Scatter
                   name="Trend"
                   data={trendPoints}
-                  line={{ stroke: '#ef4444', strokeWidth: 4, strokeDasharray: '0' }}
+                  line={{ stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '0' }}
                   lineType="fitting"
                   legendType="none"
                   shape={<circle r={0} />}
