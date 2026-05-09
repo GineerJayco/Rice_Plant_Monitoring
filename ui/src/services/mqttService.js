@@ -3,6 +3,17 @@ import mqtt from 'mqtt';
 /**
  * MQTT Service for browser dashboard connection via HiveMQ Cloud WebSocket.
  *
+ * ── Web Worker Architecture ──
+ * The MQTT client now runs inside a Web Worker so that browser tab
+ * throttling (which pauses/delays setTimeout/setInterval in inactive
+ * tabs) can never prevent the MQTT keep-alive PINGREQ from being sent
+ * on time.  This fixes the disconnect that occurred when the browser
+ * tab was open but idle and no sensor messages were flowing.
+ *
+ * The public API is unchanged — connectMqtt, disconnectMqtt,
+ * subscribeToMqtt, subscribeToStatus, getConnectionStatus, TOPICS
+ * all work exactly as before.
+ *
  * Topics (matched to raspicode.txt):
  *   rice/sensors   — global sensor JSON
  *   rice/image     — per-plant base64 JPEG
@@ -24,10 +35,14 @@ export const TOPICS = {
   detection: 'rice/detection',
 };
 
-let client = null;
+let worker = null;
 let messageSubscribers = [];
 let statusSubscribers = [];
 let isConnected = false;
+
+// ── Fallback flag: use main-thread mqtt if Worker fails ──
+let useMainThread = false;
+let client = null;
 
 /**
  * Notify all status subscribers of a connection state change.
@@ -50,6 +65,11 @@ export const subscribeToStatus = (callback) => {
 
 /**
  * Connect to HiveMQ Cloud MQTT broker via WebSocket Secure.
+ *
+ * Primary path: spawns a Web Worker that owns the MQTT client.
+ * Fallback:     if Workers are unavailable, connects on the main thread
+ *               (original behaviour).
+ *
  * Resolves when connected & subscribed.
  */
 export const connectMqtt = ({
@@ -57,6 +77,104 @@ export const connectMqtt = ({
   topics = Object.values(TOPICS),
   onError,
 } = {}) => {
+  if (isConnected) return Promise.resolve();
+
+  // ── Try Web Worker path ──────────────────────────────────
+  if (!useMainThread && typeof Worker !== 'undefined') {
+    return connectViaWorker({ brokerUrl, topics, onError });
+  }
+
+  // ── Fallback: main-thread connection ─────────────────────
+  return connectMainThread({ brokerUrl, topics, onError });
+};
+
+// ================================================================
+//  WEB WORKER PATH
+// ================================================================
+
+function connectViaWorker({ brokerUrl, topics, onError }) {
+  // Tear down stale worker
+  if (worker) {
+    try { worker.terminate(); } catch (_) { /* ignore */ }
+    worker = null;
+  }
+
+  try {
+    worker = new Worker(
+      new URL('./mqttWorker.js', import.meta.url),
+      { type: 'module' }
+    );
+  } catch (err) {
+    // Worker creation failed (e.g. browser doesn't support module workers).
+    // Fall back to main-thread connection permanently for this session.
+    console.warn('[MQTT] Web Worker creation failed, falling back to main thread:', err.message);
+    useMainThread = true;
+    return connectMainThread({ brokerUrl, topics, onError });
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+
+    worker.onmessage = (event) => {
+      const { type, payload } = event.data;
+
+      switch (type) {
+        case 'connected':
+          console.log('[MQTT] ✅ Connected to HiveMQ Cloud (via Worker)');
+          notifyStatus(true);
+          break;
+
+        case 'subscribed':
+          console.log('[MQTT] Subscribed to:', (payload || []).join(', '));
+          if (!settled) { settled = true; resolve(); }
+          break;
+
+        case 'message':
+          messageSubscribers.forEach((cb) => cb(payload.topic, payload.data));
+          break;
+
+        case 'reconnecting':
+          console.log('[MQTT] Reconnecting...');
+          break;
+
+        case 'disconnected':
+          notifyStatus(false);
+          break;
+
+        case 'error':
+          console.error('[MQTT] Worker error:', payload);
+          notifyStatus(false);
+          if (typeof onError === 'function') onError(new Error(payload));
+          if (!settled) { settled = true; reject(new Error(payload)); }
+          break;
+      }
+    };
+
+    worker.onerror = (error) => {
+      console.error('[MQTT] Worker runtime error:', error);
+      notifyStatus(false);
+      if (typeof onError === 'function') onError(error);
+      if (!settled) { settled = true; reject(error); }
+    };
+
+    // Tell the worker to connect
+    worker.postMessage({
+      type: 'connect',
+      payload: {
+        brokerUrl,
+        username: MQTT_USERNAME,
+        password: MQTT_PASSWORD,
+        topics,
+      },
+    });
+  });
+}
+
+// ================================================================
+//  MAIN-THREAD FALLBACK (original behaviour, kept as safety net)
+// ================================================================
+
+function connectMainThread({ brokerUrl, topics, onError }) {
   if (client && isConnected) return Promise.resolve();
 
   // Tear down stale client
@@ -77,7 +195,7 @@ export const connectMqtt = ({
 
   return new Promise((resolve, reject) => {
     client.once('connect', () => {
-      console.log('[MQTT] ✅ Connected to HiveMQ Cloud');
+      console.log('[MQTT] ✅ Connected to HiveMQ Cloud (main thread fallback)');
       notifyStatus(true);
 
       if (!topics.length) {
@@ -130,7 +248,7 @@ export const connectMqtt = ({
       reject(error);
     });
   });
-};
+}
 
 /**
  * Subscribe to incoming MQTT messages.
@@ -147,11 +265,25 @@ export const subscribeToMqtt = (callback) => {
  * Disconnect from the MQTT broker
  */
 export const disconnectMqtt = () => {
+  // Worker path
+  if (worker) {
+    worker.postMessage({ type: 'disconnect' });
+    // Allow the worker a moment to clean up, then terminate
+    setTimeout(() => {
+      if (worker) {
+        try { worker.terminate(); } catch (_) { /* ignore */ }
+        worker = null;
+      }
+    }, 500);
+  }
+
+  // Main-thread fallback path
   if (client) {
     client.end(true);
     client = null;
-    notifyStatus(false);
   }
+
+  notifyStatus(false);
 };
 
 /**
