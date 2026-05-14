@@ -24,7 +24,7 @@ import mqtt from 'mqtt';
 const BROKER_HOST = import.meta.env.VITE_MQTT_BROKER || 'd0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud';
 const BROKER_PORT = import.meta.env.VITE_MQTT_WEBSOCKET_PORT || 8884;
 const MQTT_USERNAME = import.meta.env.VITE_MQTT_USERNAME || 'thesis_pi';
-const MQTT_PASSWORD = import.meta.env.VITE_MQTT_PASSWORD || 'H@rveypads123';
+const MQTT_PASSWORD = import.meta.env.VITE_MQTT_PASSWORD || 'your-mqtt-password';
 
 const MQTT_URL = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
 

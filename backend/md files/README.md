@@ -169,7 +169,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
 MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 MQTT_PORT=8883
 MQTT_USERNAME=thesis_pi
-MQTT_PASSWORD=H@rveypads123
+MQTT_PASSWORD=your-mqtt-password
 
 # CORS
 CORS_ORIGIN=http://localhost:5173,https://your-app.vercel.app

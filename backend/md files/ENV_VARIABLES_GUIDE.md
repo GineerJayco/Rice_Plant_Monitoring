@@ -12,7 +12,7 @@
 | `MQTT_BROKER` | HiveMQ Cloud broker | `d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud` |
 | `MQTT_PORT` | MQTT secure port | `8883` |
 | `MQTT_USERNAME` | MQTT username | `thesis_pi` |
-| `MQTT_PASSWORD` | MQTT password | `H@rveypads123` |
+| `MQTT_PASSWORD` | MQTT password | `your-mqtt-password` |
 | `MQTT_TOPICS` | Topics to subscribe (comma-separated) | `rice/sensors,rice/image,rice/detection` |
 | `CORS_ORIGIN` | Frontend URL for CORS | `http://localhost:5173` or `https://app.vercel.app` |
 | `LOG_LEVEL` | Logging level | `info`, `debug`, `error` |
@@ -26,7 +26,7 @@
 | `VITE_MQTT_BROKER` | MQTT broker URL | `d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud` |
 | `VITE_MQTT_WEBSOCKET_PORT` | WebSocket port for browser | `8884` |
 | `VITE_MQTT_USERNAME` | MQTT username | `thesis_pi` |
-| `VITE_MQTT_PASSWORD` | MQTT password | `H@rveypads123` |
+| `VITE_MQTT_PASSWORD` | MQTT password | `your-mqtt-password` |
 | `VITE_USE_MOCK` | Use mock data | `false` or `true` |
 
 ## How to Get Supabase Keys
@@ -57,7 +57,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 MQTT_PORT=8883
 MQTT_USERNAME=thesis_pi
-MQTT_PASSWORD=H@rveypads123
+MQTT_PASSWORD=your-mqtt-password
 CORS_ORIGIN=https://your-app.vercel.app
 ```
 
@@ -70,5 +70,5 @@ VITE_BACKEND_URL=https://rice-monitoring-backend.onrender.com
 VITE_MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 VITE_MQTT_WEBSOCKET_PORT=8884
 VITE_MQTT_USERNAME=thesis_pi
-VITE_MQTT_PASSWORD=H@rveypads123
+VITE_MQTT_PASSWORD=your-mqtt-password
 ```

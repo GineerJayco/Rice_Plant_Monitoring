@@ -14,7 +14,7 @@ VITE_API_URL=http://localhost:5000
 VITE_MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 VITE_MQTT_WEBSOCKET_PORT=8884
 VITE_MQTT_USERNAME=thesis_pi
-VITE_MQTT_PASSWORD=H@rveypads123
+VITE_MQTT_PASSWORD=your-mqtt-password
 ```
 
 ### 2. Start Backend & Frontend
@@ -224,7 +224,7 @@ VITE_BACKEND_URL=https://rice-monitoring-backend.onrender.com
 VITE_MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 VITE_MQTT_WEBSOCKET_PORT=8884
 VITE_MQTT_USERNAME=thesis_pi
-VITE_MQTT_PASSWORD=H@rveypads123
+VITE_MQTT_PASSWORD=your-mqtt-password
 ```
 
 ### Backend (Render)
