@@ -3,7 +3,7 @@ import mqtt from 'mqtt';
 const BROKER = 'wss://d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud:8884/mqtt';
 const client = mqtt.connect(BROKER, {
     username: 'thesis_pi',
-    password: 'H@rveypads123',
+    password: process.env.MQTT_PASSWORD || 'your-mqtt-password',
 });
 
 client.on('connect', () => {

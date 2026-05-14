@@ -16,7 +16,7 @@ dotenv.config();
 const BROKER_HOST = process.env.MQTT_BROKER || 'd0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud';
 const BROKER_PORT = process.env.MQTT_PORT || 8883;
 const MQTT_USERNAME = process.env.MQTT_USERNAME || 'thesis_pi';
-const MQTT_PASSWORD = process.env.MQTT_PASSWORD || 'H@rveypads123';
+const MQTT_PASSWORD = process.env.MQTT_PASSWORD || 'your-mqtt-password';
 const MQTT_URL = `mqtts://${BROKER_HOST}:${BROKER_PORT}`;
 
 const TOPICS = {

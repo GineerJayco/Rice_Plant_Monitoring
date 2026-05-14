@@ -145,7 +145,7 @@ pip3 install paho-mqtt opencv-python numpy onnxruntime pyserial
 MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 MQTT_PORT=8883
 MQTT_USER=thesis_pi
-MQTT_PASSWORD=H@rveypads123
+MQTT_PASSWORD=your-mqtt-password
 SERIAL_PORT=/dev/ttyUSB0
 SERIAL_BAUD=115200
 ```
@@ -167,7 +167,7 @@ python3 raspicode.txt
 **Broker Host:** `d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud`
 **WebSocket Port:** `8884`
 **Username:** `thesis_pi`
-**Password:** `H@rveypads123`
+**Password:** `your-mqtt-password`
 
 ✅ Use these credentials in your Raspberry Pi `.env` file and website `.env` file
 
@@ -213,7 +213,7 @@ import mqtt from 'mqtt';
 const BROKER_HOST = import.meta.env.VITE_MQTT_BROKER || 'd0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud';
 const BROKER_PORT = import.meta.env.VITE_MQTT_WEBSOCKET_PORT || 8884; // WebSocket Secure
 const MQTT_USERNAME = import.meta.env.VITE_MQTT_USERNAME || 'thesis_pi';
-const MQTT_PASSWORD = import.meta.env.VITE_MQTT_PASSWORD || 'H@rveypads123';
+const MQTT_PASSWORD = import.meta.env.VITE_MQTT_PASSWORD || 'your-mqtt-password';
 
 const MQTT_URL = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
 
@@ -874,7 +874,7 @@ export default DiseaseDetection;
 VITE_MQTT_BROKER=d0e0ce8ffc364fe4b5c641f8f84ef0a1.s1.eu.hivemq.cloud
 VITE_MQTT_WEBSOCKET_PORT=8884
 VITE_MQTT_USERNAME=thesis_pi
-VITE_MQTT_PASSWORD=H@rveypads123
+VITE_MQTT_PASSWORD=your-mqtt-password
 ```
 
 ---
